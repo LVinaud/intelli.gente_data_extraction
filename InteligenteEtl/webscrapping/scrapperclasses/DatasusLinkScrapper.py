@@ -271,7 +271,9 @@ class DatasusLinkScrapper(AbstractScrapper):
             options.add_argument("--disable-dev-shm-usage")  # prevenir problemas de memória
       driver = webdriver.Chrome(options=options)
       driver.get(self.website_url) #driver do selenium vai pro site
-      select_element = driver.find_element(By.ID, self.HTML_YEAR_BUTTON_ID) #acha o botão de selecionar os anos
+      select_element = WebDriverWait(driver, 5).until(
+         EC.presence_of_element_located((By.ID, self.HTML_YEAR_BUTTON_ID))
+      ) #acha o botão de selecionar os anos, esperando 5 segundos para carregar a página
       self.__select_data_options(driver) #caso seja necessário, seleciona as opções nas 3 tabelas do topo da página do datasus para mostrar os dados
       #certos
 
