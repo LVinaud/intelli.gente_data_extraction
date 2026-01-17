@@ -145,7 +145,11 @@
         "Whathsaap" : "MTIC136",
         "Twiter" : "MTIC139", 
 
-        "Pesquisa satisfação serviço público" : "MTIC1218"
+        "Pesquisa satisfação serviço público" : "MTIC1218",
+
+        "Disponibiliza acesso por conexão wi-fi" : "MTIC22"
+
+        
     },
 
     "2020" :
@@ -176,6 +180,24 @@
         "Legislação ou instrumento de gestão ambiental sobre fauna silvestre" : "MMAM208",
         "Legislação ou instrumento de gestão ambiental sobre florestas" : "MMAM209",
         "Legislação ou instrumento de gestão ambiental sobre proteção à biodiversidade" : "MMAM2012",
+
+        "Condições climáticas extremas (secas, enxurradas)" : "MMAM261",
+        "Poluição do ar" : "MMAM262",
+        "Poluição de algum corpo d’água" : "MMAM263",
+        "Assoreamento de algum corpo d’água" : "MMAM264",
+        "Diminuição de vazão de algum corpo d’água" : "MMAM265",
+        "Desmatamentos" : "MMAM266",
+        "Queimadas" : "MMAM267",
+        "Contaminação do solo (por agrotóxicos, fertilizantes)" : "MMAM268",
+        "Perda de solos por erosão e/ou desertificação (voçorocas, arenização)" : "MMAM269",
+
+        "Degradação de áreas legalmente protegidas" : "MMAM2610",
+        "Diminuição da biodiversidade (fauna e flora)" : "MMAM2611",
+        "Existência de moradia em situação de risco ambiental" : "MMAM2612",
+        "Falta de saneamento (destinação inadequada do esgoto doméstico)" : "MMAM2613",
+
+
+        
 
         "Plano Municipal de Transporte contempla a inclusão de pessoas com deficiência na rede viária e no sistema de transporte" : "MTRA086",
         "Frota de ônibus municipais adaptada para pessoas com deficiência ou mobilidade reduzida" : "MTRA21",
@@ -209,7 +231,17 @@
 
         "Plano Municipal de Transporte contempla o uso pelo pedestre e pelo ciclista do espaço viário de uso público" : "MTRA085",
         "Ciclovia no município - existência" : "MTRA24", 
-        "Bicicletário no município - existência" : "MTRA25"        
+        "Bicicletário no município - existência" : "MTRA25",
+        
+        "Agricultura orgânica" : "MAGR151",
+        "Agricultura familiar" : "MAGR152",
+        "Aquicultura" : "MAGR153",
+        "Pesca" : "MAGR154",
+        "Produção de hortas comunitárias" : "MAGR155"
+
+
+
+
     },
 
     "2021" : 
@@ -244,7 +276,11 @@
         "Projetos voltados para educação quilombolas" : "MEDU133",
         "Projetos voltados para a educação de outros povos e comunidades tradicionais" : "MEDU134",
 
-        "Combate à violência nas escolas" : "MEDU114"
+        "Combate à violência nas escolas" : "MEDU114",
+
+        "Encarcerado/egressos do sistema carcerário" : "MASS2614" ,
+        "Serviço de Proteção Social a Adolescentes em Cumprimento de Medida Socioeducativa de Liberdade Assistida (LA) e de Prestação de Serviços à Comunidade (PSC)" : "MASS2411",
+        "Serviço de Acolhimento Institucional para mulheres em situação de violência" : "MASS2418"
     }
 }
 
