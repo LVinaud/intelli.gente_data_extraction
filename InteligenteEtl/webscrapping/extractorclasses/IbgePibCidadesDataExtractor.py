@@ -20,23 +20,52 @@ class CitiesGDPDataInfo(Enum):
       "data_category": "caracterizacao_socio_economica",
       "data_name": "PIB per capita",
       "column_name": """Produto Interno Bruto per capita, 
-       a preços correntes
-       (R$ 1,00)""",
+a preços correntes
+(R$ 1,00)""",
       "dtype": DataTypes.FLOAT,
       "multiply_amount": 1
    }
+
    AGRI_GDP = {
       "data_category": "caracterizacao_socio_economica",
       "data_name": "PIB Agropecuária",
       "column_name": """Valor adicionado bruto da Agropecuária, 
-   a preços correntes
-   (R$ 1.000)""",
+a preços correntes
+(R$ 1.000)""",
       "dtype": DataTypes.FLOAT,
       "multiply_amount": 1000
    }
-   #INDUSTRY_GDP = {
 
-  # }
+   INDUSTRY_GDP = {
+      "data_category": "caracterizacao_socio_economica",
+      "data_name": "PIB Indústria",
+      "column_name": """Valor adicionado bruto da Indústria,
+a preços correntes
+(R$ 1.000)""",
+      "dtype": DataTypes.FLOAT,
+      "multiply_amount": 1000
+   }
+
+   SERVICES_GDP = {
+      "data_category": "caracterizacao_socio_economica",
+      "data_name": "PIB Serviços",
+      "column_name": """Valor adicionado bruto dos Serviços,
+a preços correntes 
+- exceto Administração, defesa, educação e saúde públicas e seguridade social
+(R$ 1.000)""",
+      "dtype": DataTypes.FLOAT,
+      "multiply_amount": 1000
+   }
+
+   PUBLIC_ADMIN_GDP = {
+      "data_category": "caracterizacao_socio_economica",
+      "data_name": "PIB Administração Pública",
+      "column_name": """Valor adicionado bruto da Administração, defesa, educação e saúde públicas e seguridade social, 
+a preços correntes
+(R$ 1.000)""",
+      "dtype": DataTypes.FLOAT,
+      "multiply_amount": 1000
+   }
 
 class IbgePibCidadesDataExtractor(AbstractDataExtractor):
 
