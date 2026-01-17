@@ -216,6 +216,7 @@
         "categoria" : "Inclusão Social",
         "tipo" : "bool"
     },
+    
 
 
 
@@ -445,6 +446,11 @@
         "tipo" : "bool"
     },
     "Instalação de rede wi-fi rede pública de ensino" :
+    {
+        "categoria" : "Inclusão Digital",
+        "tipo" : "bool"
+    },
+    "Disponibiliza acesso por conexão wi-fi" :
     {
         "categoria" : "Inclusão Digital",
         "tipo" : "bool"
@@ -903,6 +909,22 @@
         "categoria" : "Segurança Pública",
         "tipo" : "bool"
     },
+    "Serviço de Proteção Social a Adolescentes em Cumprimento de Medida Socioeducativa de Liberdade Assistida (LA) e de Prestação de Serviços à Comunidade (PSC)" :
+    {
+        "categoria" : "Segurança Pública",
+        "tipo" : "bool"
+    },
+    "Serviço de Acolhimento Institucional para mulheres em situação de violência" :
+    {
+        "categoria" : "Segurança Pública",
+        "tipo" : "bool"
+    },
+    "Serviço de Encarcerado/egressos do sistema carcerário" :
+    {
+        "categoria" : "Segurança Pública",
+        "tipo" : "bool"
+    },
+    
 
 
 
@@ -951,6 +973,72 @@
         "categoria" : "Gestão de Desastres",
         "tipo" : "bool"
     },
+    "Condições climáticas extremas (secas, enxurradas)" :
+    {
+        "categoria" : "Gestão de Desastres",
+        "tipo" : "bool"
+    },
+    "Poluição do ar" :
+    {
+        "categoria" : "Gestão de Desastres",
+        "tipo" : "bool"
+    },
+    "Poluição de algum corpo d’água" :
+    {
+        "categoria" : "Gestão de Desastres",
+        "tipo" : "bool"
+    },
+    "Assoreamento de algum corpo d’água" :
+    {
+        "categoria" : "Gestão de Desastres",
+        "tipo" : "bool"
+    },
+    "Diminuição de vazão de algum corpo d’água" :
+    {
+        "categoria" : "Gestão de Desastres",
+        "tipo" : "bool"
+    },
+    "Desmatamentos" :
+    {
+        "categoria" : "Gestão de Desastres",
+        "tipo" : "bool"
+    },
+    "Queimadas" :
+    {
+        "categoria" : "Gestão de Desastres",
+        "tipo" : "bool"
+    },
+    "Contaminação do solo (por agrotóxicos, fertilizantes)" :
+    {
+        "categoria" : "Gestão de Desastres",
+        "tipo" : "bool"
+    },
+    "Perda de solos por erosão e/ou desertificação (voçorocas, arenização)" :
+    {
+        "categoria" : "Gestão de Desastres",
+        "tipo" : "bool"
+    },
+    "Degradação de áreas legalmente protegidas" :
+    {
+        "categoria" : "Gestão de Desastres",
+        "tipo" : "bool"
+    },
+    "Diminuição da biodiversidade (fauna e flora)" :
+    {
+        "categoria" : "Gestão de Desastres",
+        "tipo" : "bool"
+    },
+    "Existência de moradia em situação de risco ambiental" :
+    {
+        "categoria" : "Gestão de Desastres",
+        "tipo" : "bool"
+    },
+    "Falta de saneamento (destinação inadequada do esgoto doméstico)" :
+    {
+        "categoria" : "Gestão de Desastres",
+        "tipo" : "bool"
+    },
+
 
     "Barco" :
     {
@@ -1049,6 +1137,31 @@
     },
 
     "Legislação ou instrumento de gestão ambiental sobre proteção à biodiversidade" :
+    {
+        "categoria" : "Áreas Verdes",
+        "tipo" : "bool"
+    },
+    "Agricultura orgânica" :
+    {
+        "categoria" : "Áreas Verdes",
+        "tipo" : "bool"
+    },
+    "Agricultura familiar" :
+    {
+        "categoria" : "Áreas Verdes",
+        "tipo" : "bool"
+    },
+    "Aquicultura" :
+    {
+        "categoria" : "Áreas Verdes",
+        "tipo" : "bool"
+    },
+    "Pesca" :
+    {
+        "categoria" : "Áreas Verdes",
+        "tipo" : "bool"
+    },
+    "Produção de hortas comunitárias" :
     {
         "categoria" : "Áreas Verdes",
         "tipo" : "bool"
