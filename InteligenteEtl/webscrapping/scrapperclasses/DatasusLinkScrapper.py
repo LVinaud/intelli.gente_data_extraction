@@ -265,7 +265,7 @@ class DatasusLinkScrapper(AbstractScrapper):
       """
       options = webdriver.ChromeOptions()
       if self.headless_mode:
-            options.add_argument("--headless")  # modo para não gerar um janela
+            #options.add_argument("--headless")  # modo para não gerar um janela
             options.add_argument("--disable-gpu")  # compatibilidade
             options.add_argument("--no-sandbox") 
             options.add_argument("--disable-dev-shm-usage")  # prevenir problemas de memória
@@ -424,8 +424,10 @@ class DatasusLinkScrapper(AbstractScrapper):
      
       link_index:int = html.find(CSV_LINK_IDENTIFIER)
       if (link_index == -1):
-         #print("Não foi possível achar o link do CSV")
+         print("Não foi possível achar o link do CSV")
          return ""
+      else: 
+         print(f"LINK CSV ENCONTRADO")
          
       link_end:int = html.find('"',link_index)
       link_start:int = html.rfind('"',0,link_index)

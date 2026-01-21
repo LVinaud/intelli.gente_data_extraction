@@ -13,3 +13,6 @@ tempfiles
 csvs
 InteligenteEtl/build/
 /.vscode
+.venv
+anatel_data
+anatel_2024

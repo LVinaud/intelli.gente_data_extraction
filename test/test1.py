@@ -2,7 +2,7 @@ from webscrapping.extractorclasses import *
 from webscrapping.scrapperclasses import * #um dos poucos casos que fazer isso é uma boa ideia!
 from webscrapping.extractorclasses import DatasusDataExtractor, IbgePibCidadesDataExtractor, CityPaymentsExtractor
 from webscrapping.scrapperclasses import DatasusDataInfo,IbgePibCidadesScrapper
-from webscrapping.extractorclasses import  FormalJobsExtractor, IdhExtractor, SnisExtractor, IbgeCitiesNetworkExtractor, IbgeMunicExtractor
+from webscrapping.extractorclasses import  FormalJobsExtractor, IdhExtractor, IbgeCitiesNetworkExtractor, IbgeMunicExtractor
 from apiextractors import IbgeAgregatesApi, IpeaViolenceMapApi, AnatelApi
 from datastructures import  YearDataPoint
 import pandas as pd
@@ -104,5 +104,6 @@ def parse_csv():
  
 if __name__ == "__main__":
    #run_Idbe()
-   run_city_gdp()
+   #run_city_gdp()
    #run_MUNIC_base()
+   run_datasus(data_info=DatasusDataInfo.LIVE_BIRTHS)
