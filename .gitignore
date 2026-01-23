@@ -16,3 +16,5 @@ InteligenteEtl/build/
 .venv
 anatel_data
 anatel_2024
+anatel_page_source.html
+page_source.html
