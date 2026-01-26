@@ -39,6 +39,28 @@ class DatasusDataInfo(Enum):
       "monthly_data":False,
       "dtype":DataTypes.FLOAT
    }
+   POP_15PLUS = {
+      "url":"http://tabnet.datasus.gov.br/cgi/deftohtm.exe?ibge/censo/cnv/alfbr.def",
+      "data_abrev":"alfbr",
+      "data_name":"População de 15 anos ou mais",
+      "data_topic":"Educação",
+      "content_to_select":["População de 15 anos ou mais"],
+      "columns_to_select":["Não ativa"],
+      "lines_to_select":["Município"],
+      "monthly_data":False,
+      "dtype":DataTypes.INT
+   }
+   ILLITERATE_POP_15PLUS = {
+      "url":"http://tabnet.datasus.gov.br/cgi/deftohtm.exe?ibge/censo/cnv/alfbr.def",
+      "data_abrev":"alfbr",
+      "data_name":"População não alfabetizada (15+)",
+      "data_topic":"Educação",
+      "content_to_select":["População não alfabetizada"],
+      "columns_to_select":["Não ativa"],
+      "lines_to_select":["Município"],
+      "monthly_data":False,
+      "dtype":DataTypes.INT
+   }
    MATERNAL_MORTALITY =  {
       "url":"http://tabnet.datasus.gov.br/cgi/tabcgi.exe?sim/cnv/mat10br.def",
       "data_abrev":"matbr", 
