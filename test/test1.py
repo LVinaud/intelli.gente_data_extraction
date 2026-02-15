@@ -2,8 +2,8 @@ from webscrapping.extractorclasses import *
 from webscrapping.scrapperclasses import * #um dos poucos casos que fazer isso é uma boa ideia!
 from webscrapping.extractorclasses import DatasusDataExtractor, IbgePibCidadesDataExtractor, CityPaymentsExtractor
 from webscrapping.scrapperclasses import DatasusDataInfo,IbgePibCidadesScrapper
-from webscrapping.extractorclasses import  FormalJobsExtractor, IdhExtractor, IbgeCitiesNetworkExtractor, IbgeMunicExtractor
-from apiextractors import IbgeAgregatesApi, IpeaViolenceMapApi, AnatelApi
+from webscrapping.extractorclasses import  FormalJobsExtractor, IdhExtractor, IbgeCitiesNetworkExtractor, IbgeMunicExtractor, AnatelExtractor
+from apiextractors import IbgeAgregatesApi, IpeaViolenceMapApi
 from datastructures import  YearDataPoint
 import pandas as pd
 
@@ -57,8 +57,8 @@ def run_IDH():
       collect.df.to_csv("idh-m.csv",index=False)
 
 def run_ANATEL():
-   obj = AnatelApi()
-   list_ = obj.extract_processed_collection()
+   extractor = AnatelExtractor()
+   list_ = extractor.extract_processed_collection()
    for collect in list_:
       print(collect.df.info())
       collect.df.to_csv(f"{collect.data_name}.csv")
@@ -106,4 +106,5 @@ if __name__ == "__main__":
    #run_Idbe()
    #run_city_gdp()
    #run_MUNIC_base()
-   run_datasus(data_info=DatasusDataInfo.LIVE_BIRTHS)
+   #run_datasus(data_info=DatasusDataInfo.LIVE_BIRTHS)
+   run_ANATEL()

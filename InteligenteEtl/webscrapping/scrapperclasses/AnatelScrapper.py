@@ -273,9 +273,11 @@ class AnatelScrapper(AbstractScrapper):
                     os.remove(file_path)
         print("Done.")
 
-    def extract_database(self) -> list:
+    def extract_database(self) -> str:
         self.download_data()
-        return []
+        base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+        download_dir = os.path.join(base_dir, 'anatel_2024')
+        return download_dir
 
 if __name__ == "__main__":
     scraper = AnatelScrapper()
