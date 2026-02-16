@@ -3,6 +3,7 @@ from webscrapping.scrapperclasses import * #um dos poucos casos que fazer isso Ã
 from webscrapping.extractorclasses import DatasusDataExtractor, IbgePibCidadesDataExtractor, CityPaymentsExtractor
 from webscrapping.scrapperclasses import DatasusDataInfo,IbgePibCidadesScrapper
 from webscrapping.extractorclasses import  FormalJobsExtractor, IdhExtractor, IbgeCitiesNetworkExtractor, IbgeMunicExtractor, AnatelExtractor
+from webscrapping.extractorclasses import HigherEducaPositionsExtractor, SchoolDistortionRatesExtractor
 from apiextractors import IbgeAgregatesApi, IpeaViolenceMapApi
 from datastructures import  YearDataPoint
 import pandas as pd
@@ -92,6 +93,20 @@ def run_Idbe():
       print(colec.data_name)
       colec.df.to_csv(f"{colec.data_name}.csv")
 
+def run_higher_educa():
+   extractor = HigherEducaPositionsExtractor()
+   collection = extractor.extract_processed_collection()
+   for colec in collection:
+      print(colec.df.info())
+      colec.df.to_csv(f"{colec.data_name}.csv")
+
+def run_school_distortion():
+   extractor = SchoolDistortionRatesExtractor()
+   collection = extractor.extract_processed_collection()
+   for colec in collection:
+      print(colec.df.info())
+      colec.df.to_csv(f"{colec.data_name}.csv")
+
 def parse_csv():
    import os
    files:list[str] = os.listdir(os.getcwd())
@@ -107,4 +122,6 @@ if __name__ == "__main__":
    #run_city_gdp()
    #run_MUNIC_base()
    #run_datasus(data_info=DatasusDataInfo.LIVE_BIRTHS)
-   run_ANATEL()
+   #run_ANATEL()
+
+   run_Idbe()

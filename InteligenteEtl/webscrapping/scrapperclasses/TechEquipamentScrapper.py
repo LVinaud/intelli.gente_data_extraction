@@ -1,198 +1,189 @@
-from datastructures import YearDataPoint
-from .AbstractScrapper import AbstractScrapper
-import pandas as pd
-
 import os
 import re
-import time
+import requests
 import zipfile
 import pandas as pd
-from selenium import webdriver
-from selenium.webdriver.common.action_chains import ActionChains
-from selenium.webdriver.chrome.options import Options
+from datastructures import YearDataPoint
+from .AbstractScrapper import AbstractScrapper
 
-# Configuração de logging
 
 class TechEquipamentScrapper(AbstractScrapper):
-    
-    URL = "https://www.gov.br/inep/pt-br/acesso-a-informacao/dados-abertos/microdados/censo-escolar"
-    REGEX_PATTERN = r'https://download.inep.gov.br/dados_abertos/microdados_censo_escolar_\d{4}\.zip'
-    SCHOOL_TO_CITY_TABLE_FILE = "suplemento_cursos_tecnicos"
 
+    # URL base do INEP para microdados do Censo Escolar
+    BASE_DOWNLOAD_URL = "https://download.inep.gov.br/dados_abertos/microdados_censo_escolar_{year}.zip"
 
-    __school_to_city_df:pd.DataFrame|None
-    chrome_option: Options
+    # Headers para simular browser real
+    HEADERS = {
+        "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        "Accept": "application/zip, application/octet-stream, */*",
+        "Accept-Language": "pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7",
+        "Referer": "https://www.gov.br/inep/pt-br/areas-de-atuacao/pesquisas-estatisticas-e-indicadores/censo-escolar/resultados",
+    }
+
+    # Colunas relevantes do CSV de microdados
+    RELEVANT_COLS = [
+        "CO_MUNICIPIO",
+        "TP_DEPENDENCIA",
+        "TP_SITUACAO_FUNCIONAMENTO",
+        "IN_LABORATORIO_INFORMATICA",
+        "IN_EQUIP_LOUSA_DIGITAL",
+        "IN_EQUIP_MULTIMIDIA",
+        "IN_DESKTOP_ALUNO",
+        "IN_COMP_PORTATIL_ALUNO",
+        "IN_TABLET_ALUNO",
+        "IN_INTERNET_APRENDIZAGEM",
+    ]
+
+    # Colunas de indicadores (binárias 0/1)
+    INDICATOR_COLS = [
+        "IN_LABORATORIO_INFORMATICA",
+        "IN_EQUIP_LOUSA_DIGITAL",
+        "IN_EQUIP_MULTIMIDIA",
+        "IN_DESKTOP_ALUNO",
+        "IN_COMP_PORTATIL_ALUNO",
+        "IN_TABLET_ALUNO",
+        "IN_INTERNET_APRENDIZAGEM",
+    ]
 
     def __init__(self):
         super().__init__()
         self.files_folder_path = self._create_downloaded_files_dir()
-        self.__school_to_city_df = None
-        self.chrome_option =  webdriver.ChromeOptions()
-        self.chrome_option.add_argument("--headless")  # modo para não gerar um janela
-        self.chrome_option.add_argument("--disable-gpu")  # compatibilidade
-        self.chrome_option.add_argument("--no-sandbox") 
-        self.chrome_option.add_argument("--disable-dev-shm-usage")  # prevenir problemas de memória
-        self.chrome_option.add_experimental_option("prefs", {
-            "download.default_directory": os.path.abspath(self.files_folder_path),
-            "download.prompt_for_download": False,
-            "download.directory_upgrade": True,
-            "safebrowsing.enabled": True
-        })
 
-    def __get_school_to_city_code_table(self,path:str)->pd.DataFrame:
-        COLS_TO_READ = [
-            "CO_MUNICIPIO",
-            "NO_ENTIDADE"
-        ]
-        return pd.read_csv(
-            path,
-            sep=";",
-            encoding="latin-1",
-            usecols=COLS_TO_READ
-        )
+    def __build_download_urls(self, years_to_extract: int) -> list[str]:
+        """Constroi URLs de download para cada ano."""
+        from etl_config import get_current_year
+        urls = []
+        current = get_current_year()
+        for year in range(current, current - years_to_extract, -1):
+            url = self.BASE_DOWNLOAD_URL.format(year=year)
+            urls.append(url)
+        return urls
 
-    def __extract_links(self) -> list[str]:
-        """
-        extrai os links e retorna uma lista deles
-        """
-        driver = webdriver.Chrome(options=self.chrome_option)
-        driver.maximize_window()
-        driver.get(self.URL)
-        time.sleep(5)
-
-        try:
-            actions = ActionChains(driver)
-            actions.move_by_offset(driver.execute_script("return window.innerWidth / 2;"),
-                                   driver.execute_script("return window.innerHeight / 2;")).click().perform()
-            time.sleep(2)
-        except Exception as e:
-            print(f"Erro ao clicar no centro da tela: {e}")
-
-        html_content = driver.page_source
-        driver.quit()
-
-        links = re.findall(self.REGEX_PATTERN, html_content)
-
-        return links
-
-    def __download_zipfiles(self, urls: list[str]) -> None:
-        """
-        baixa os zipfiles localmente usando o selenium
-        """
-        driver = webdriver.Chrome(options=self.chrome_option)
+    def __download_and_extract_zipfiles(self, urls: list[str]) -> None:
+        """Baixa os ZIPs via requests e extrai."""
+        download_dir = self.DOWNLOADED_FILES_PATH
+        if not os.path.isdir(download_dir):
+            os.makedirs(download_dir)
 
         for url in urls:
-            driver.get(url)
-            time.sleep(10)  # Tempo para garantir que o download comece
+            filename = url.split('/')[-1]
+            zip_path = os.path.join(download_dir, filename)
 
-            max_wait_time = 300  # 5 minutos
-            wait_time = 0
-            poll_interval = 5
+            print(f"Downloading {filename}...")
+            try:
+                response = requests.get(url, headers=self.HEADERS, timeout=600, stream=True)
 
-            while wait_time < max_wait_time:
-                files = os.listdir(self.files_folder_path)
-                downloading = any(file.endswith(".crdownload") for file in files)
-                if not downloading:
-                    break
+                if response.status_code != 200:
+                    print(f"  ✗ HTTP {response.status_code} — skipping")
+                    continue
 
-                time.sleep(poll_interval)
-                wait_time += poll_interval
-        
-        driver.quit()
+                content_type = response.headers.get("Content-Type", "")
+                if "text/html" in content_type:
+                    print(f"  ✗ Server returned HTML instead of ZIP — skipping")
+                    continue
 
-    def __extract_zipfiles(self) -> None:
+                total_size = 0
+                with open(zip_path, "wb") as f:
+                    for chunk in response.iter_content(chunk_size=8192):
+                        f.write(chunk)
+                        total_size += len(chunk)
+
+                print(f"  ✓ Downloaded ({total_size / 1024 / 1024:.1f} MB)")
+
+                # Verificar magic bytes do ZIP
+                with open(zip_path, "rb") as f:
+                    magic = f.read(4)
+                if not magic.startswith(b'PK'):
+                    print(f"  ✗ File is not a valid ZIP — removing")
+                    os.remove(zip_path)
+                    continue
+
+                # Extrair
+                print(f"  Extracting {filename}...")
+                with zipfile.ZipFile(zip_path, "r") as zip_ref:
+                    zip_ref.extractall(download_dir)
+                os.remove(zip_path)
+                print(f"  ✓ Extracted and removed {filename}")
+
+            except requests.RequestException as e:
+                print(f"  ✗ Download failed: {e}")
+                if os.path.exists(zip_path):
+                    os.remove(zip_path)
+            except zipfile.BadZipFile:
+                print(f"  ✗ Bad ZIP file — removing")
+                if os.path.exists(zip_path):
+                    os.remove(zip_path)
+
+    def __find_microdados_csv(self, base_path: str) -> str | None:
+        """Procura o CSV principal de microdados dentro da estrutura de pastas extraída."""
+        for root, dirs, files in os.walk(base_path):
+            for file in files:
+                if file.lower().startswith("microdados_ed_basica") and file.lower().endswith(".csv"):
+                    return os.path.join(root, file)
+        return None
+
+    def __process_csv(self, csv_path: str) -> pd.DataFrame | None:
         """
-        Extrai os zipfiles localmente
+        Lê o CSV de microdados, filtra escolas públicas municipais em atividade,
+        e retorna DF com CO_MUNICIPIO + colunas de indicadores.
         """
-        for file in os.listdir(self.files_folder_path):
-            if file.endswith(".zip"):
-                file_path = os.path.join(self.files_folder_path, file)
-                with zipfile.ZipFile(file_path, "r") as zip_ref:
-                    zip_ref.extractall(self.files_folder_path)
-                os.remove(file_path)
-
-    def __process_all_files_in_directory(self, folder_path: str) -> list[YearDataPoint]:
-        year_data_points = []
-
-        for root, dirs, files in os.walk(folder_path):
-            #caminho pelos subdiretórios até achar no dir que tem os arquivos CSV
-            for file in files:       
-                if file.endswith(".csv") and not file.lower().startswith("~$"):
-                    file_correct_path = os.path.join(root, file)
-                    if  self.SCHOOL_TO_CITY_TABLE_FILE.lower() in file.lower(): #arquivo é o mapping de nome de escola para o código do município                
-                        self.__school_to_city_df = self.__get_school_to_city_code_table(file_correct_path)
-                        continue                    
-                    year_data_point = self.__data_file_process(file_correct_path)
-                    if year_data_point:
-                        year_data_points.append(year_data_point)
-                    else:
-                        print(f"Processamento falhou em um dos arquivos: {file_correct_path}")
-
-        return year_data_points
-
-    def __data_file_process(self, file_path: str) -> YearDataPoint:
-        """
-        Dado um file path de um csv, extrai o df e o ano dele,retornando um objeto YearDataPoint
-        """
-        
-        df = self.__process_df(file_path)
-        year = self.__extract_year_from_path(file_path)
-        return YearDataPoint(df=df, data_year=year)
-        
-    def __process_df(self, csv_file_path: str) -> pd.DataFrame:
-        """
-        Dado um path para um arquivo CSV, tenta ler ele num DF
-        """
-        RELEVANT_COLS: list[str] = [
-            "IN_LABORATORIO_INFORMATICA", "IN_EQUIP_LOUSA_DIGITAL", "IN_EQUIP_MULTIMIDIA",
-            "IN_DESKTOP_ALUNO", "IN_COMP_PORTATIL_ALUNO", "IN_TABLET_ALUNO", 
-            "IN_INTERNET_APRENDIZAGEM", "NO_ENTIDADE"
-        ]
-        # Leitura do arquivo CSV, utilizando as colunas relevantes
-        df = pd.read_csv(csv_file_path, sep=";", encoding="latin-1", usecols=RELEVANT_COLS)
-
-        # Exibindo informações básicas para verificar se a leitura foi correta
-
-        # Chamando a função __filter_df
-        self.__filter_df(df)
-        
-        return df
-
-    def __filter_df(self, df: pd.DataFrame) -> pd.DataFrame:
-        # Retornando o DataFrame sem filtros
-        return df
-
-    def __add_city_codes(self, df: pd.DataFrame) -> pd.DataFrame:
-        merged = df.merge( #join nos dataframes pela coluna de nome da
-            right=self.__school_to_city_df,
-            on="NO_ENTIDADE",
-            how='inner',
-        )
-
-        merged = merged.drop(["NO_ENTIDADE"],axis="columns")
-        return merged
-
-    def __extract_year_from_path(self, path: str) -> int:
-        ano_match = re.search(r'\d{4}', path)
-        if ano_match:
-            return int(ano_match.group(0))
-        else:
+        print(f"  Reading {os.path.basename(csv_path)}...")
+        try:
+            df = pd.read_csv(csv_path, sep=";", encoding="latin-1", usecols=self.RELEVANT_COLS)
+        except Exception as e:
+            print(f"  ✗ Error reading CSV: {e}")
             return None
 
-    def extract_database(self,years_to_extract:int=15) -> list[YearDataPoint]:
-      links = self.__extract_links()[:years_to_extract]
-      self.__download_zipfiles(links)
-      self.__extract_zipfiles()
-      data_points:list[YearDataPoint] = self.__process_all_files_in_directory(self.files_folder_path)
+        print(f"  Raw rows: {len(df)}")
 
-      if self.__school_to_city_df is None:
-            raise RuntimeError("Não foi possível achar arquivo que mapea o nome das escolas para um município")
+        # Filtrar: TP_DEPENDENCIA = 3 (Municipal) e TP_SITUACAO_FUNCIONAMENTO = 1 (Em atividade)
+        df = df[
+            (df["TP_DEPENDENCIA"] == 3) &
+            (df["TP_SITUACAO_FUNCIONAMENTO"] == 1)
+        ]
+        print(f"  After filter (municipal, em atividade): {len(df)} schools")
 
-      self._delete_download_files_dir()
+        # Manter apenas CO_MUNICIPIO + colunas de indicadores
+        keep_cols = ["CO_MUNICIPIO"] + self.INDICATOR_COLS
+        df = df[keep_cols]
 
-      return [ 
-            YearDataPoint(self.__add_city_codes(data.df),data.data_year) for data in data_points    
-      ]
+        # Preencher NaN com 0 (escola que não tem o dado = não possui o equipamento)
+        df[self.INDICATOR_COLS] = df[self.INDICATOR_COLS].fillna(0)
 
+        return df
 
-        
+    def __extract_year_from_path(self, path: str) -> int | None:
+        ano_match = re.search(r'\d{4}', os.path.basename(path))
+        if not ano_match:
+            ano_match = re.search(r'\d{4}', path)
+        return int(ano_match.group(0)) if ano_match else None
+
+    def extract_database(self, years_to_extract: int = 3) -> list[YearDataPoint]:
+        """Baixa, extrai e processa os microdados do Censo Escolar."""
+        urls = self.__build_download_urls(years_to_extract)
+        self.__download_and_extract_zipfiles(urls)
+
+        year_data_points = []
+
+        # Percorrer pastas extraídas
+        for item in os.listdir(self.DOWNLOADED_FILES_PATH):
+            item_path = os.path.join(self.DOWNLOADED_FILES_PATH, item)
+            if not os.path.isdir(item_path):
+                continue
+
+            csv_path = self.__find_microdados_csv(item_path)
+            if not csv_path:
+                print(f"  No microdados CSV found in {item}")
+                continue
+
+            year = self.__extract_year_from_path(csv_path)
+            df = self.__process_csv(csv_path)
+
+            if df is not None and year:
+                print(f"  ✓ Year {year}: {len(df)} rows")
+                year_data_points.append(YearDataPoint(df=df, data_year=year))
+            else:
+                print(f"  Processing failed for {item}")
+
+        self._delete_download_files_dir()
+        return year_data_points

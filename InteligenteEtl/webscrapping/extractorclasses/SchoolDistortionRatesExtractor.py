@@ -1,75 +1,89 @@
 from .AbstractDataExtractor import AbstractDataExtractor
 from webscrapping.scrapperclasses import SchoolDistortionRatesScrapper
-from datastructures import ProcessedDataCollection,YearDataPoint,DataTypes
+from datastructures import ProcessedDataCollection, YearDataPoint, DataTypes
 import pandas as pd
 
+
 class SchoolDistortionRatesExtractor(AbstractDataExtractor):
-   
-   DATA_CATEGORY = "Educação"
-   DTYPE = DataTypes.FLOAT
-   DATA_NAME = "Taxas de distorção idade-série"
 
-   __scrapper_class: SchoolDistortionRatesScrapper
+    DATA_CATEGORY = "Educação"
+    DTYPE = DataTypes.FLOAT
+    DATA_NAME = "Taxas de distorção idade-série"
 
-   def __init__(self):
-      self.__scrapper_class = SchoolDistortionRatesScrapper()
+    # Nomes das colunas no XLSX (row 8 = header com códigos)
+    COL_YEAR = "NU_ANO_CENSO"
+    COL_MUNICIPALITY_CODE = "CO_MUNICIPIO"
+    COL_MUNICIPALITY_NAME = "NO_MUNICIPIO"
+    COL_UF = "SG_UF"
+    COL_LOCATION = "NO_CATEGORIA"        # Localização (Total, Urbana, Rural)
+    COL_ADMIN_DEP = "NO_DEPENDENCIA"     # Dependência Administrativa (Total, Federal, Estadual, Municipal, Privada)
+    COL_TOTAL_EF = "FUN_CAT_0"           # Total - Ensino Fundamental
 
-   def extract_processed_collection(self)-> list[ProcessedDataCollection]:
-      data_points:list[YearDataPoint] = self.__scrapper_class.extract_database()
-      time_series_years:list[int] = YearDataPoint.get_years_from_list(data_points)
+    __scrapper_class: SchoolDistortionRatesScrapper
 
-      joined_df:pd.DataFrame = self._concat_data_points(data_points)
-      joined_df = self.__process_df(joined_df)
+    def __init__(self):
+        self.__scrapper_class = SchoolDistortionRatesScrapper()
 
-      joined_df = self.__rename_and_add_cols(joined_df)
-      joined_df = joined_df.dropna() #remove valores NaN
+    def extract_processed_collection(self) -> list[ProcessedDataCollection]:
+        data_points: list[YearDataPoint] = self.__scrapper_class.extract_database()
+        time_series_years: list[int] = YearDataPoint.get_years_from_list(data_points)
 
-      collection = ProcessedDataCollection(
-         category=self.DATA_CATEGORY,
-         dtype=self.DTYPE,
-         data_name=self.DATA_NAME,
-         time_series_years=time_series_years,
-         df= joined_df
-      )
+        joined_df: pd.DataFrame = self._concat_data_points(data_points)
+        joined_df = self.__process_df(joined_df)
 
-      return [collection]
+        if joined_df is None or joined_df.empty:
+            print("Warning: No data after processing.")
+            return []
 
-   def __process_df(self,df: pd.DataFrame) -> pd.DataFrame:
+        joined_df = self.__rename_and_add_cols(joined_df)
+        joined_df = joined_df.dropna()
+
+        collection = ProcessedDataCollection(
+            category=self.DATA_CATEGORY,
+            dtype=self.DTYPE,
+            data_name=self.DATA_NAME,
+            time_series_years=time_series_years,
+            df=joined_df
+        )
+
+        return [collection]
+
+    def __process_df(self, df: pd.DataFrame) -> pd.DataFrame:
+        """Filtra dados: Localização='Total' e Dependência Administrativa='Municipal'."""
         try:
-            municipality_col = 'Unnamed: 3'
-            location_col = 'Unnamed: 5'
-            admin_dependency_col = 'Unnamed: 6'
+            # Filtrar: Localização = Total, Dep. Administrativa = Municipal
+            df_filtered = df[
+                (df[self.COL_LOCATION] == 'Total') &
+                (df[self.COL_ADMIN_DEP] == 'Municipal')
+            ]
 
-            df_filtered = df[(df[location_col] == 'Total') & (df[admin_dependency_col] == 'Total')]
-            
-            filtered_df = df_filtered.drop(
-               [location_col,admin_dependency_col],
-               axis="columns"
-            ) #remove colunas desnecessárias
+            # Selecionar apenas as colunas necessárias
+            result_df = df_filtered[[
+                self.COL_MUNICIPALITY_CODE,
+                self.COL_TOTAL_EF,
+                self.YEAR_COLUMN  # coluna 'ano' adicionada por _concat_data_points
+            ]].copy()
 
-            filtered_df = filtered_df.rename({
-                municipality_col: self.CITY_CODE_COL,
-            },axis="columns")
+            # Renomear código do município para o padrão do projeto
+            result_df = result_df.rename({
+                self.COL_MUNICIPALITY_CODE: self.CITY_CODE_COL,
+            }, axis="columns")
 
-            filtered_df[self.CITY_CODE_COL] = filtered_df[self.CITY_CODE_COL].astype("int")
-            filtered_df = filtered_df.reset_index(drop=True)
-            return filtered_df
-        
+            result_df[self.CITY_CODE_COL] = result_df[self.CITY_CODE_COL].astype("int")
+            result_df = result_df.reset_index(drop=True)
+            return result_df
+
         except Exception as e:
             print(f"Erro ao processar o DataFrame: {e}")
             return None
 
-   def __rename_and_add_cols(self,df:pd.DataFrame)->pd.DataFrame:
-      EXTRACTED_DATA_VAL_COL = "Total"
+    def __rename_and_add_cols(self, df: pd.DataFrame) -> pd.DataFrame:
+        """Renomeia coluna de valor e adiciona colunas de identificação."""
+        df = df.rename({
+            self.COL_TOTAL_EF: self.DATA_VALUE_COLUMN
+        }, axis="columns")
 
-      df = df.rename({
-         EXTRACTED_DATA_VAL_COL: self.DATA_VALUE_COLUMN
+        df[self.DATA_IDENTIFIER_COLUMN] = self.DATA_NAME
+        df[self.DTYPE_COLUMN] = self.DTYPE.value
 
-      },axis="columns")
-
-      df[self.DATA_IDENTIFIER_COLUMN] = self.DATA_NAME
-      df[self.DTYPE_COLUMN] = self.DTYPE.value
-
-
-      return df
-
+        return df
