@@ -8,11 +8,14 @@ from .AbstractScrapper import AbstractScrapper
 
 
 class TechEquipamentScrapper(AbstractScrapper):
+    """
+    Scrapper para microdados do Censo Escolar (educação básica).
+    Baixa ZIPs do INEP e processa o CSV de microdados, filtrando escolas municipais em atividade.
+    Usado por TechEquipamentExtractor e CensoEscolarExtractor.
+    """
 
-    # URL base do INEP para microdados do Censo Escolar
     BASE_DOWNLOAD_URL = "https://download.inep.gov.br/dados_abertos/microdados_censo_escolar_{year}.zip"
 
-    # Headers para simular browser real
     HEADERS = {
         "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
         "Accept": "application/zip, application/octet-stream, */*",
@@ -20,11 +23,12 @@ class TechEquipamentScrapper(AbstractScrapper):
         "Referer": "https://www.gov.br/inep/pt-br/areas-de-atuacao/pesquisas-estatisticas-e-indicadores/censo-escolar/resultados",
     }
 
-    # Colunas relevantes do CSV de microdados
+    # Todas as colunas necessárias para os 4 indicadores do Censo Escolar
     RELEVANT_COLS = [
         "CO_MUNICIPIO",
         "TP_DEPENDENCIA",
         "TP_SITUACAO_FUNCIONAMENTO",
+        # Grupo 1: Equipamentos de tecnologia (binárias 0/1)
         "IN_LABORATORIO_INFORMATICA",
         "IN_EQUIP_LOUSA_DIGITAL",
         "IN_EQUIP_MULTIMIDIA",
@@ -32,10 +36,18 @@ class TechEquipamentScrapper(AbstractScrapper):
         "IN_COMP_PORTATIL_ALUNO",
         "IN_TABLET_ALUNO",
         "IN_INTERNET_APRENDIZAGEM",
+        # Grupo 2: Internet (binária 0/1)
+        "IN_INTERNET",
+        # Grupo 3: Matrículas
+        "QT_MAT_FUND",
+        "QT_MAT_BAS",
+        # Grupo 4: Quantidades de computadores
+        "QT_DESKTOP_ALUNO",
+        "QT_COMP_PORTATIL_ALUNO",
     ]
 
-    # Colunas de indicadores (binárias 0/1)
-    INDICATOR_COLS = [
+    # Colunas binárias de indicadores de tecnologia
+    BINARY_INDICATOR_COLS = [
         "IN_LABORATORIO_INFORMATICA",
         "IN_EQUIP_LOUSA_DIGITAL",
         "IN_EQUIP_MULTIMIDIA",
@@ -43,14 +55,25 @@ class TechEquipamentScrapper(AbstractScrapper):
         "IN_COMP_PORTATIL_ALUNO",
         "IN_TABLET_ALUNO",
         "IN_INTERNET_APRENDIZAGEM",
+        "IN_INTERNET",
     ]
+
+    # Colunas de quantidades (somatórias)
+    QUANTITY_COLS = [
+        "QT_MAT_FUND",
+        "QT_MAT_BAS",
+        "QT_DESKTOP_ALUNO",
+        "QT_COMP_PORTATIL_ALUNO",
+    ]
+
+    # Todas as colunas de dados (exceto filtros e ID)
+    ALL_DATA_COLS = BINARY_INDICATOR_COLS + QUANTITY_COLS
 
     def __init__(self):
         super().__init__()
         self.files_folder_path = self._create_downloaded_files_dir()
 
     def __build_download_urls(self, years_to_extract: int) -> list[str]:
-        """Constroi URLs de download para cada ano."""
         from etl_config import get_current_year
         urls = []
         current = get_current_year()
@@ -60,7 +83,6 @@ class TechEquipamentScrapper(AbstractScrapper):
         return urls
 
     def __download_and_extract_zipfiles(self, urls: list[str]) -> None:
-        """Baixa os ZIPs via requests e extrai."""
         download_dir = self.DOWNLOADED_FILES_PATH
         if not os.path.isdir(download_dir):
             os.makedirs(download_dir)
@@ -90,7 +112,6 @@ class TechEquipamentScrapper(AbstractScrapper):
 
                 print(f"  ✓ Downloaded ({total_size / 1024 / 1024:.1f} MB)")
 
-                # Verificar magic bytes do ZIP
                 with open(zip_path, "rb") as f:
                     magic = f.read(4)
                 if not magic.startswith(b'PK'):
@@ -98,7 +119,6 @@ class TechEquipamentScrapper(AbstractScrapper):
                     os.remove(zip_path)
                     continue
 
-                # Extrair
                 print(f"  Extracting {filename}...")
                 with zipfile.ZipFile(zip_path, "r") as zip_ref:
                     zip_ref.extractall(download_dir)
@@ -115,7 +135,6 @@ class TechEquipamentScrapper(AbstractScrapper):
                     os.remove(zip_path)
 
     def __find_microdados_csv(self, base_path: str) -> str | None:
-        """Procura o CSV principal de microdados dentro da estrutura de pastas extraída."""
         for root, dirs, files in os.walk(base_path):
             for file in files:
                 if file.lower().startswith("microdados_ed_basica") and file.lower().endswith(".csv"):
@@ -123,10 +142,6 @@ class TechEquipamentScrapper(AbstractScrapper):
         return None
 
     def __process_csv(self, csv_path: str) -> pd.DataFrame | None:
-        """
-        Lê o CSV de microdados, filtra escolas públicas municipais em atividade,
-        e retorna DF com CO_MUNICIPIO + colunas de indicadores.
-        """
         print(f"  Reading {os.path.basename(csv_path)}...")
         try:
             df = pd.read_csv(csv_path, sep=";", encoding="latin-1", usecols=self.RELEVANT_COLS)
@@ -136,19 +151,19 @@ class TechEquipamentScrapper(AbstractScrapper):
 
         print(f"  Raw rows: {len(df)}")
 
-        # Filtrar: TP_DEPENDENCIA = 3 (Municipal) e TP_SITUACAO_FUNCIONAMENTO = 1 (Em atividade)
+        # Filtrar: Municipal (3) + Em atividade (1)
         df = df[
             (df["TP_DEPENDENCIA"] == 3) &
             (df["TP_SITUACAO_FUNCIONAMENTO"] == 1)
         ]
         print(f"  After filter (municipal, em atividade): {len(df)} schools")
 
-        # Manter apenas CO_MUNICIPIO + colunas de indicadores
-        keep_cols = ["CO_MUNICIPIO"] + self.INDICATOR_COLS
+        # Manter apenas CO_MUNICIPIO + colunas de dados
+        keep_cols = ["CO_MUNICIPIO"] + self.ALL_DATA_COLS
         df = df[keep_cols]
 
-        # Preencher NaN com 0 (escola que não tem o dado = não possui o equipamento)
-        df[self.INDICATOR_COLS] = df[self.INDICATOR_COLS].fillna(0)
+        # Preencher NaN com 0
+        df[self.ALL_DATA_COLS] = df[self.ALL_DATA_COLS].fillna(0)
 
         return df
 
@@ -159,13 +174,11 @@ class TechEquipamentScrapper(AbstractScrapper):
         return int(ano_match.group(0)) if ano_match else None
 
     def extract_database(self, years_to_extract: int = 3) -> list[YearDataPoint]:
-        """Baixa, extrai e processa os microdados do Censo Escolar."""
         urls = self.__build_download_urls(years_to_extract)
         self.__download_and_extract_zipfiles(urls)
 
         year_data_points = []
 
-        # Percorrer pastas extraídas
         for item in os.listdir(self.DOWNLOADED_FILES_PATH):
             item_path = os.path.join(self.DOWNLOADED_FILES_PATH, item)
             if not os.path.isdir(item_path):
