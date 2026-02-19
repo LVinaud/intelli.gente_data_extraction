@@ -124,4 +124,4 @@ if __name__ == "__main__":
    #run_datasus(data_info=DatasusDataInfo.LIVE_BIRTHS)
    #run_ANATEL()
 
-   run_tech_equipament()
+   run_school_distortion()
