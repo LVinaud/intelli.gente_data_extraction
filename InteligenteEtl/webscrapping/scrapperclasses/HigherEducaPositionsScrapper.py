@@ -26,9 +26,12 @@ class HigherEducaPositionsScrapper(AbstractScrapper):
     def __init__(self):
         self._create_downloaded_files_dir()
 
+    # Primeiro ano com formato moderno (CURSOS CSV com colunas padronizadas)
+    MIN_YEAR = 2009
+
     def extract_database(self) -> list[YearDataPoint]:
-        links: list[str] = self.__get_file_links()[:3]
-        print(f"Links encontrados: {links}")
+        links: list[str] = self.__get_file_links()
+        print(f"Links encontrados ({len(links)} anos): {links[0]} ... {links[-1]}")
         self.__download_and_extract_zipfiles(links)
         time.sleep(2)
 
@@ -51,13 +54,19 @@ class HigherEducaPositionsScrapper(AbstractScrapper):
         return year_data_points
 
     def __get_file_links(self) -> list[str]:
-        """Extrai links de download direto do HTML da página via requests."""
-        regex_pattern = r'https://download\.inep\.gov\.br/microdados/microdados_censo_da_educacao_superior_\d{4}\.zip'
+        """Extrai links de download direto do HTML da página via requests.
+        Filtra apenas anos >= MIN_YEAR (formato moderno com CURSOS CSV)."""
+        regex_pattern = r'https://download\.inep\.gov\.br/microdados/microdados_censo_da_educacao_superior_(\d{4})\.zip'
         response = requests.get(self.URL, headers=self.HEADERS)
         html = response.text
-        regex = re.compile(regex_pattern)
-        links = regex.findall(html)
-        return links
+        matches = re.findall(regex_pattern, html)
+        # Filtrar por ano >= MIN_YEAR e reconstruir URLs
+        filtered_links = [
+            f"https://download.inep.gov.br/microdados/microdados_censo_da_educacao_superior_{year}.zip"
+            for year in sorted(set(matches))
+            if int(year) >= self.MIN_YEAR
+        ]
+        return filtered_links
 
     def __download_and_extract_zipfiles(self, urls: list[str]) -> None:
         """Baixa os ZIPs via requests (não Selenium) e extrai no diretório de dados."""

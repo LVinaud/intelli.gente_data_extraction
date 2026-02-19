@@ -69,15 +69,18 @@ class TechEquipamentScrapper(AbstractScrapper):
     # Todas as colunas de dados (exceto filtros e ID)
     ALL_DATA_COLS = BINARY_INDICATOR_COLS + QUANTITY_COLS
 
+    # Primeiro ano com formato moderno (microdados_ed_basica CSV com colunas padronizadas)
+    MIN_YEAR = 2007
+
     def __init__(self):
         super().__init__()
         self.files_folder_path = self._create_downloaded_files_dir()
 
-    def __build_download_urls(self, years_to_extract: int) -> list[str]:
+    def __build_download_urls(self) -> list[str]:
         from etl_config import get_current_year
         urls = []
         current = get_current_year()
-        for year in range(current, current - years_to_extract, -1):
+        for year in range(self.MIN_YEAR, current + 1):
             url = self.BASE_DOWNLOAD_URL.format(year=year)
             urls.append(url)
         return urls
@@ -173,8 +176,9 @@ class TechEquipamentScrapper(AbstractScrapper):
             ano_match = re.search(r'\d{4}', path)
         return int(ano_match.group(0)) if ano_match else None
 
-    def extract_database(self, years_to_extract: int = 3) -> list[YearDataPoint]:
-        urls = self.__build_download_urls(years_to_extract)
+    def extract_database(self) -> list[YearDataPoint]:
+        urls = self.__build_download_urls()
+        print(f"Downloading {len(urls)} years ({self.MIN_YEAR}-{urls[-1].split('_')[-1].split('.')[0]})...")
         self.__download_and_extract_zipfiles(urls)
 
         year_data_points = []

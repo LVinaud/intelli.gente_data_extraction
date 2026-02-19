@@ -82,8 +82,8 @@ class TechEquipamentExtractor(AbstractDataExtractor):
             df=new_df
         )
 
-    def extract_processed_collection(self, years_to_extract: int = 3) -> list[ProcessedDataCollection]:
-        data_points: list[YearDataPoint] = self.__SCRAPPER_CLASS.extract_database(years_to_extract)
+    def extract_processed_collection(self) -> list[ProcessedDataCollection]:
+        data_points: list[YearDataPoint] = self.__SCRAPPER_CLASS.extract_database()
         time_series_years: list[int] = YearDataPoint.get_years_from_list(data_points)
 
         joined_df: pd.DataFrame = self._concat_data_points(data_points)
