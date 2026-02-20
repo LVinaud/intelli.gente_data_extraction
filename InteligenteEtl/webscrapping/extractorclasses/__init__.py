@@ -11,3 +11,4 @@ from .IdebFinalYearsExtractor import idebFinalYearsExtractor
 from .TechEquipamentExtractor import TechEquipamentExtractor
 from .IbgeMunicExtractor import IbgeMunicExtractor
 from .AnatelExtractor import AnatelExtractor
+from .SinisaExtractor import SinisaExtractor
