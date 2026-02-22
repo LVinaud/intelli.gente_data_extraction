@@ -141,15 +141,13 @@ class CnucScrapper(AbstractScrapper):
 
         return str(out_path)
 
-    # --------- API igual ao seu padrão ---------
-
     def scrape_csv(self) -> str:
         spec: CnucQuerySpec = self.data_point_to_extract.value["spec"]
 
         self._create_downloaded_files_dir()
         download_dir = Path(self.DOWNLOADED_FILES_PATH)
 
-        # se você travou URL (ótimo pra começar e “congelar” o insumo por ano)
+        # se você travou URL
         if spec.direct_csv_url:
             fname = f"cnuc_{spec.year}.csv"
             return self._download(spec.direct_csv_url, download_dir / fname)

@@ -312,7 +312,7 @@ class CnucExtractor(AbstractDataExtractor):
                 self.YEAR_COLUMN: year,
                 self.CITY_CODE_COL: metric[self.CITY_CODE_COL],
                 self.DATA_IDENTIFIER_COLUMN: data_point.value["data_identifier"],
-                self.DTYPE_COLUMN: "int",  # garante DW numérico; ajuste se seu dtype for outro
+                self.DTYPE_COLUMN: "int",  # garante DW numérico
                 self.DATA_VALUE_COLUMN: metric["biome_code"].astype(int),
             })
 
@@ -325,7 +325,7 @@ class CnucExtractor(AbstractDataExtractor):
 
             return ProcessedDataCollection(
                 category=data_point.value["topic"],
-                dtype=data_point.value["dtype"],  # se seu projeto suportar STR, dá pra mudar isso
+                dtype=data_point.value["dtype"], 
                 data_name=data_point.value["data_identifier"],
                 time_series_years=[year],
                 df=final,
