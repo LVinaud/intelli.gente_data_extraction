@@ -1,5 +1,7 @@
 import pandas as pd
 import os
+import unicodedata
+import re
 from etl_config import get_config
 
 """
@@ -77,30 +79,49 @@ def get_city_code_from_string(city_name:str,city_state:str)->int:
    
    return df["codigo_municipio"].iloc[-1]
 
-def match_city_names_with_codes(df_with_city_names:pd.DataFrame,city_names_col:str,states_col:str)->pd.DataFrame:
+def match_city_names_with_codes(df_with_city_names: pd.DataFrame, city_names_col: str, states_col: str) -> pd.DataFrame:
    """
-   Dado um DF com uma coluna com o nome do município e outra com a sigla do estado do Município, retorna um
-   df similar com uma nova coluna que tem os códigos de municípios associados. Municípios cujo código não consiga ser inferido
-   são removidos do novo df.
-
-   Args:
-      df_with_city_names (pd.DataFrame): df com colunas dos nomes da cidade e da sigla do estado
-      city_names_col (str): coluna do df que tem os nomes de cada município
-      states_col (str): coluna do df que tem as siglas dos estados de cada município
-   
-   Return:
-      (pd.DataFrame): DataFrame de entrada com uma nova coluna que representa o código do IBGE de cada município
+   Igual ao original, mas robusto a acentos (São Paulo vs Sao Paulo), hífens/apóstrofos
+   e espaços múltiplos. Mantém o comportamento: se não casar, some (inner join).
    """
-   parse_string = lambda x: x.lower().replace(" ","") #parsing nas strings
 
-   df:pd.DataFrame = pd.read_csv(__CSV_FILE_PATH)
-   df["nome_municipio"] = df["nome_municipio"].apply(parse_string) #parsing na coluna de nome de municípios
-   df_filtered = df.loc[:,["nome_municipio","sigla_uf","codigo_municipio"]] #pega apenas as colunas necessárias
+   def normalize(s: str) -> str:
+      if pd.isna(s):
+         return ""
+      s = str(s).strip().lower()
 
-   df_with_city_names[city_names_col] = df_with_city_names[city_names_col].apply(parse_string)
-   merged = df_with_city_names.merge(df_filtered,how="inner",left_on=[city_names_col,states_col],right_on=["nome_municipio","sigla_uf"])
+      # remove acentos/diacríticos
+      s = unicodedata.normalize("NFKD", s)
+      s = "".join(ch for ch in s if not unicodedata.combining(ch))
 
-   #merged.to_csv("merged.csv")
+      # normaliza pontuação comum (hífen, apóstrofo etc.)
+      s = re.sub(r"[-'`´’\.]", "", s)
+
+      # remove espaços
+      s = re.sub(r"\s+", "", s)
+      return s
+
+   df_ref: pd.DataFrame = pd.read_csv(__CSV_FILE_PATH)
+
+   df_ref["nome_municipio_norm"] = df_ref["nome_municipio"].apply(normalize)
+   df_ref["sigla_uf_norm"] = df_ref["sigla_uf"].astype(str).str.strip().str.upper()
+
+   df_filtered = df_ref.loc[:, ["nome_municipio_norm", "sigla_uf_norm", "codigo_municipio"]]
+
+   df_with_city_names = df_with_city_names.copy()
+   df_with_city_names["_city_norm"] = df_with_city_names[city_names_col].apply(normalize)
+   df_with_city_names["_uf_norm"] = df_with_city_names[states_col].astype(str).str.strip().str.upper()
+
+   merged = df_with_city_names.merge(
+      df_filtered,
+      how="inner",
+      left_on=["_city_norm", "_uf_norm"],
+      right_on=["nome_municipio_norm", "sigla_uf_norm"],
+   )
+
+   # limpa colunas auxiliares
+   merged = merged.drop(columns=["_city_norm", "_uf_norm", "nome_municipio_norm", "sigla_uf_norm"], errors="ignore")
+
    return merged
 
 

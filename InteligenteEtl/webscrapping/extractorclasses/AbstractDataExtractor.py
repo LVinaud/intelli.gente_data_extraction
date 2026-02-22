@@ -55,17 +55,18 @@ class AbstractDataExtractor(ABC):
       """
       return str.lower().replace(" ","").replace("\n","")
 
-   def check_city_code(self,df:pd.DataFrame, city_code_column:str)->bool:
+   def check_city_code(self, df: pd.DataFrame, city_code_column: str) -> bool:
       """
-      checa se um código de cidade do IBGE está dentro do padrão de 7 dígitos, ou se é um código antigo com num diferente
-      de dígitos. É testado apenas um valor dessa coluna
+      Checa se um código de cidade do IBGE está dentro do padrão de 7 dígitos.
+      Testa apenas um valor dessa coluna (primeira linha do DF).
       """
-
-      city_code:int = int(df.at[0,city_code_column]) #o dado já é inteiro, essa função é para ser safe
-      if city_code >= 1000000 and city_code < 10000000 : #tem 7 dígitos exatamente
-         return True #retorna o DF normalmente 
-      else:
+      try:
+         # mantém a lógica original, só evitando crash quando não for número
+         city_code: int = int(df.at[0, city_code_column])
+      except (ValueError, TypeError, KeyError):
          return False
+
+      return 1_000_000 <= city_code < 10_000_000
 
    def update_city_code(self,df:pd.DataFrame, city_code_column:str)->pd.DataFrame:
       """
