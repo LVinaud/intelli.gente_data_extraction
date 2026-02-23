@@ -29,7 +29,7 @@ class RaisQuerySpec:
 
     altera_setorial_id: int = 32
     altera_cnae_id: int = 37
-    cnae_secao_text: str = "CNAE 2.0 Seção"
+    cnae_dimension_text: str = "CNAE 2.0 Seção"
 
     categories_to_select: List[str] = field(default_factory=list)
 
@@ -46,12 +46,32 @@ class RaisDataInfo(Enum):
         "spec": RaisQuerySpec(
             year="2024",
             companies_section=False,
+            cnae_dimension_text="CNAE 2.0 Seção",
             series_url="https://bi.mte.gov.br/bgcaged/caged_rais_vinculo_id/caged_rais_vinculo_basico_tab.php",
             altera_setorial_id=32,
             altera_cnae_id=37,
             categories_to_select=[
                 "Atividades Profissionais, Científicas e Técnicas",
                 "Informação e Comunicação",
+            ],
+        ),
+    }
+
+    TOURISM_JOBS = {
+        "data_identifier": "Empregos em Turismo",
+        "topic": "Turismo",
+        "dtype": DataTypes.INT,
+        "companies_section": False,
+        "spec": RaisQuerySpec(
+            year="2024",
+            companies_section=False,
+            cnae_dimension_text="CNAE 2.0 Grupo",
+            series_url="https://bi.mte.gov.br/bgcaged/caged_rais_vinculo_id/caged_rais_vinculo_basico_tab.php",
+            altera_setorial_id=32,
+            altera_cnae_id=37,
+            categories_to_select=[
+                "Agências de viagens e operadores turísticos",
+                "Serviços de reservas e outros serviços de turismo não especificados anteriormente",
             ],
         ),
     }
@@ -64,6 +84,7 @@ class RaisDataInfo(Enum):
         "spec": RaisQuerySpec(
             year="2024",
             companies_section=True,
+            cnae_dimension_text="CNAE 2.0 Seção",
             series_link_text="Ano corrente a 2022",
             altera_setorial_id=25,
             altera_cnae_id=35,
@@ -234,7 +255,7 @@ class RaisScrapper(AbstractScrapper):
       driver.switch_to.default_content()
       self._sleep(0.5)
 
-   def _open_selections_and_choose_cnae_secao(self, driver: webdriver.Chrome, spec: RaisQuerySpec) -> None:
+   def _open_selections_and_choose_cnae_dimension(self, driver: webdriver.Chrome, spec: RaisQuerySpec) -> None:
       self._wait(driver, 20).until(EC.presence_of_element_located((By.NAME, "lista")))
       driver.switch_to.frame("lista")
 
@@ -253,10 +274,17 @@ class RaisScrapper(AbstractScrapper):
       )
       driver.execute_script("arguments[0].click();", cnae)
 
-      cnae_secao = self._wait(driver, 20).until(
-         EC.element_to_be_clickable((By.XPATH, f"//*[contains(text(), '{spec.cnae_secao_text}')]"))
+      # dá um respiro pro menu atualizar após clicar em "cnae"
+      self._sleep(0.6)
+      
+      dim_td = self._wait(driver, 30).until(
+         EC.presence_of_element_located(
+            (By.XPATH, f"//td[contains(@onclick, 'Posiciona') and contains(@onclick, \"{spec.cnae_dimension_text}\")]")
+         )
       )
-      driver.execute_script("arguments[0].click();", cnae_secao)
+
+      driver.execute_script("arguments[0].scrollIntoView({block:'center'});", dim_td)
+      driver.execute_script("arguments[0].click();", dim_td)
 
       driver.switch_to.default_content()
       self._wait(driver, 20).until(
@@ -315,7 +343,7 @@ class RaisScrapper(AbstractScrapper):
       driver.execute_script("parent.principal.adicionaCategoria()")
       ok = driver.execute_script(
          "return parent.principal.grava_selecao_categorica(arguments[0]);",
-         spec.cnae_secao_text
+         spec.cnae_dimension_text
       )
 
       if ok:
@@ -408,7 +436,7 @@ class RaisScrapper(AbstractScrapper):
          self._open_series(driver, spec)
 
          self._apply_filters_in_principal(driver, spec)
-         self._open_selections_and_choose_cnae_secao(driver, spec)
+         self._open_selections_and_choose_cnae_dimension(driver, spec)
          self._select_categories(driver, spec)
 
          return self._execute_and_download_csv(driver, download_dir)
