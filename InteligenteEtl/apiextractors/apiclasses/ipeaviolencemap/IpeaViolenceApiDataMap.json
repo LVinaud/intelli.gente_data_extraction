@@ -1,6 +1,7 @@
 {
 
    "Segurança Pública": {
-         "Taxa de homicídios": {"id":20,"dtype":"float"}
+         "Taxa de homicídios": {"id":20,"dtype":"float"},
+         "Homicídios": {"id":328,"dtype":"float"}
    }
 }

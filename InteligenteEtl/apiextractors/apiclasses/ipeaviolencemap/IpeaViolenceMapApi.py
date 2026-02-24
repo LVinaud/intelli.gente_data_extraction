@@ -54,8 +54,11 @@ class IpeaViolenceMapApi(AbstractApiInterface):
       """
       Transforma a resposta da API numa lista de objetos DataLine
       """
-      filter_null_vals = lambda x: x["valor"] != "0"
-      filtered_response:list[dict] = list(filter(filter_null_vals,response))
+      def valid(x):
+         v = x.get("valor")
+         return v not in (None, "", "null", "NA")
+
+      filtered_response = list(filter(valid, response))
 
       parse_dates_to_years = lambda x : x[:x.find("-")] #função que transforma a string YYYY-MM-DD em uma string YYYY
       dict_to_dataline = lambda x: DataLine(
@@ -68,7 +71,7 @@ class IpeaViolenceMapApi(AbstractApiInterface):
 
    def __get_time_series_years(self,data_points:list[DataLine])->list[int]:
       years = set(map(lambda x: x.year,data_points))
-      return list(years).sort() #transforma o conjunto numa lista e ordena ele
+      return sorted(years) #transforma o conjunto numa lista e ordena ele
 
    def extract_processed_collection(self) -> list[ProcessedDataCollection]:
       raw_data_list:list[ProcessedDataCollection] = []
