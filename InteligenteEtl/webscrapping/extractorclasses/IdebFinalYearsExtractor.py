@@ -35,7 +35,6 @@ class idebFinalYearsExtractor(AbstractDataExtractor):
         new_df[self.CITY_CODE_COL] = new_df[self.CITY_CODE_COL].astype("int")
 
         # Adicionar colunas de identificação
-        new_df[self.DTYPE_COLUMN] = self.DTYPE.value
         new_df[self.DATA_IDENTIFIER_COLUMN] = self.DATA_NAME
 
         return new_df
@@ -46,6 +45,7 @@ class idebFinalYearsExtractor(AbstractDataExtractor):
 
         joined_df: pd.DataFrame = self._concat_data_points(data_points)
         joined_df = self.__treat_vals_and_add_cols(joined_df)
+        joined_df = self.update_city_code(joined_df, self.CITY_CODE_COL) #atualiza código do município de 6 para 7 dígitos
 
         collection = ProcessedDataCollection(
             category=self.DATA_TOPIC,

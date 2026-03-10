@@ -286,11 +286,10 @@ class CnucExtractor(AbstractDataExtractor):
         if data_point.name == "CONSERVATION_UNITS_COUNT":
             metric = self._compute_uc_count(exploded)
             metric[self.YEAR_COLUMN] = year
-            metric[self.DTYPE_COLUMN] = data_point.value["dtype"].value
             metric[self.DATA_IDENTIFIER_COLUMN] = data_point.value["data_identifier"]
 
             final = metric[
-                [self.YEAR_COLUMN, self.CITY_CODE_COL, self.DATA_IDENTIFIER_COLUMN, self.DTYPE_COLUMN, self.DATA_VALUE_COLUMN]
+                [self.CITY_CODE_COL, self.DATA_IDENTIFIER_COLUMN, self.YEAR_COLUMN, self.DATA_VALUE_COLUMN]
             ].copy()
 
             if self.save_csv:
@@ -309,10 +308,9 @@ class CnucExtractor(AbstractDataExtractor):
 
             # DW: usa biome_code como valor (INT)
             final = pd.DataFrame({
-                self.YEAR_COLUMN: year,
                 self.CITY_CODE_COL: metric[self.CITY_CODE_COL],
                 self.DATA_IDENTIFIER_COLUMN: data_point.value["data_identifier"],
-                self.DTYPE_COLUMN: "int",  # garante DW numérico
+                self.YEAR_COLUMN: year,
                 self.DATA_VALUE_COLUMN: metric["biome_code"].astype(int),
             })
 

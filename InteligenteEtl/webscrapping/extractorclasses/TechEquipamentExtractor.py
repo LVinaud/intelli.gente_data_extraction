@@ -70,9 +70,9 @@ class TechEquipamentExtractor(AbstractDataExtractor):
         new_df = pd.DataFrame()
         new_df[self.YEAR_COLUMN] = df[self.YEAR_COLUMN]
         new_df[self.CITY_CODE_COL] = df[self.EXTRACTED_CITY_COL]
-        new_df[self.DTYPE_COLUMN] = dtype.value
         new_df[self.DATA_IDENTIFIER_COLUMN] = data_name
         new_df[self.DATA_VALUE_COLUMN] = df[data_name]
+        new_df = self.update_city_code(new_df, self.CITY_CODE_COL) #atualiza código do município de 6 para 7 dígitos
 
         return ProcessedDataCollection(
             category=self.DATA_TOPIC,

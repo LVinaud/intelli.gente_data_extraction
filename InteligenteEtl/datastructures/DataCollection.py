@@ -27,10 +27,9 @@ class ProcessedDataCollection:
    #constante de classe para o schema dos dataframes. Força as colunas do dataframe a serem de um certo tipo de dado e seguirem certas regras de valores
    DF_SCHEMA = pa.DataFrameSchema(
           columns={
-            get_config("YEAR_COL"): pa.Column(int,pa.Check(lambda x : x <= get_current_year() and x >= get_config("OLDEST_YEAR") ,element_wise=True)), #valores da coluna de ano devem estrar entre um numero do ano mais antigo e o ano atual
             get_config("CITY_CODE_COL"): pa.Column(int, pa.Check(lambda x: x >= get_config("SMALLEST_CITY_CODE") and x <= get_config("HIGHEST_CITY_CODE"),element_wise=True)), #numero de município deve estar entre o range permitido para 7 dígitos
             get_config("DATA_IDENTIFIER_COL"): pa.Column(str),
-            get_config("DTYPE_COL"):pa.Column(str,pa.Check(lambda x: x in [y.value for y in DataTypes],element_wise=True)), #valor da coluna de tipos de dados deve pertencer aos valores do enum DataTypes
+            get_config("YEAR_COL"): pa.Column(int,pa.Check(lambda x : x <= get_current_year() and x >= get_config("OLDEST_YEAR") ,element_wise=True)), #valores da coluna de ano devem estrar entre um numero do ano mais antigo e o ano atual
             get_config("DATA_VALUE_COL"): pa.Column() #tipo da coluna de dados não é padronizado
           },
           strict=True,

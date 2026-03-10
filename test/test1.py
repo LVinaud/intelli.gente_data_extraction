@@ -123,5 +123,6 @@ if __name__ == "__main__":
    #run_MUNIC_base()
    #run_datasus(data_info=DatasusDataInfo.LIVE_BIRTHS)
    #run_ANATEL()
-
-   run_school_distortion()
+   #run_tech_equipament()
+   #run_IDH()
+   run_higher_educa()

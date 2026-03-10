@@ -36,7 +36,6 @@ class IdhExtractor(AbstractDataExtractor):
       return [collection] #retorna uma lista desse objeto para manter padronização
 
    def __add_and_rename_cols(self,df:pd.DataFrame)->pd.DataFrame:
-      df[self.DTYPE_COLUMN] = self.DTYPE.value #coluna de tipo de dado
       df[self.DATA_IDENTIFIER_COLUMN] = self.DATA_NAME #coluna do nome/identificador do dado
 
       df = df.rename(mapper={

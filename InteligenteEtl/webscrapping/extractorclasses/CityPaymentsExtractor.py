@@ -25,6 +25,7 @@ class CityPaymentsExtractor(AbstractDataExtractor):
       appended_df:pd.DataFrame = self._concat_data_points(parsed_datapoints) #junta os dataframes de anos diferentes e add a coluna de ano
       
       final_df:pd.DataFrame = self.__add_missing_cols(appended_df)
+      final_df = self.update_city_code(final_df, self.CITY_CODE_COL) #atualiza código do município de 6 para 7 dígitos
       time_series_years:list[int] = YearDataPoint.get_years_from_list(list_of_datapoints)
 
       collection = ProcessedDataCollection(
@@ -106,7 +107,6 @@ class CityPaymentsExtractor(AbstractDataExtractor):
       Adiciona as colunas que estão faltando do dataframe (tipo de dado, nome do dado, ano)
       """
       df[self.DATA_IDENTIFIER_COLUMN] = self.EXTRACTED_DATA_COL #coluna de nome do dado
-      df[self.DTYPE_COLUMN] = self.DTYPE.value #coluna de tipo de dado
 
       return df
 

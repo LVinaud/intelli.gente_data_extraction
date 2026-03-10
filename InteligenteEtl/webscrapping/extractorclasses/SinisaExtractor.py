@@ -75,7 +75,6 @@ class SinisaExtractor(AbstractDataExtractor):
       processed_df[self.CITY_CODE_COL] = df[self.RAW_CITY_CODE_COL].astype("int64")
       processed_df[self.YEAR_COLUMN] = df[self.RAW_YEAR_COL].astype("int64")
       processed_df[self.DATA_IDENTIFIER_COLUMN] = indicator_name
-      processed_df[self.DTYPE_COLUMN] = dtype.value
       processed_df[self.DATA_VALUE_COLUMN] = df[self.RAW_VALUE_COL]
 
       processed_df = processed_df.dropna(subset=[self.DATA_VALUE_COLUMN])

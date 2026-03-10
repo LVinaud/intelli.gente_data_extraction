@@ -11,7 +11,7 @@ class IbgeMunicExtractor(AbstractDataExtractor):
    __scrapper_class: IbgeMunicScrapper = IbgeMunicScrapper()
 
    def __map_binary_to_bool(self, df:pd.DataFrame)->None:
-       df['valor'] = df['valor'].map({'Sim' : 1, 
+       df[self.DATA_VALUE_COLUMN] = df[self.DATA_VALUE_COLUMN].map({'Sim' : 1, 
                                       'Parcialmente adaptada' : 1, 
                                       'Totalmente adaptada' : 1, 
                                       'Não' : 0, 
@@ -39,17 +39,16 @@ class IbgeMunicExtractor(AbstractDataExtractor):
 
             for data_name in data_codes_per_year[str(year)]:
                 data_id_column = number_of_cities*[data_codes_per_year[str(year)][data_name]]
-                data_type_column = number_of_cities*[data_infomations[data_name]['tipo']]
                 value_column = data_point.df[data_codes_per_year[str(year)][data_name]]
 
-                df = pd.DataFrame({"ano" : year_column, 
-                                   "codigo_municipio" : city_code_column, 
-                                   "dado_identificador" : data_id_column, 
-                                   "tipo_dado" : data_type_column,
-                                   "valor" : value_column})
+                df = pd.DataFrame({self.CITY_CODE_COL : city_code_column, 
+                                   self.DATA_IDENTIFIER_COLUMN : data_id_column, 
+                                   self.YEAR_COLUMN : year_column,
+                                   self.DATA_VALUE_COLUMN : value_column})
                 if data_infomations[data_name]['tipo'] == 'bool':
                     self.__map_binary_to_bool(df)
-               
+                
+                df = self.update_city_code(df, self.CITY_CODE_COL) #atualiza código do município de 6 para 7 dígitos
                 data_collections.append(ProcessedDataCollection(
                     category=data_infomations[data_name]['categoria'],
                     dtype=DataTypes.from_string(data_infomations[data_name]['tipo']),

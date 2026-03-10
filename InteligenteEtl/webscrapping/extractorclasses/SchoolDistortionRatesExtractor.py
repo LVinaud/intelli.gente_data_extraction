@@ -37,6 +37,7 @@ class SchoolDistortionRatesExtractor(AbstractDataExtractor):
 
         joined_df = self.__rename_and_add_cols(joined_df)
         joined_df = joined_df.dropna()
+        joined_df = self.update_city_code(joined_df, self.CITY_CODE_COL) #atualiza código do município de 6 para 7 dígitos
 
         collection = ProcessedDataCollection(
             category=self.DATA_CATEGORY,
@@ -84,6 +85,5 @@ class SchoolDistortionRatesExtractor(AbstractDataExtractor):
         }, axis="columns")
 
         df[self.DATA_IDENTIFIER_COLUMN] = self.DATA_NAME
-        df[self.DTYPE_COLUMN] = self.DTYPE.value
 
         return df

@@ -29,11 +29,9 @@ class FormalJobsExtractor(AbstractDataExtractor):
       remove as aspas nas colunas e valores do df  e converte eles para números no caso dos valores
       """
       final_df_val_col:str = self.DATA_VALUE_COLUMN #coluna de valores
-      final_dtype_col:str = self.DTYPE_COLUMN #coluna de tipo de dado
 
       new_df = df.copy()
       new_df = new_df[new_df[final_df_val_col] !=  self.NULL_VAL_IDENTIFIER] #tira valores nulos
-      new_df.loc[:, final_dtype_col] = self.EXTRACTED_DTYPE.value # coloca coluna de tipo do dado
 
       return new_df
 

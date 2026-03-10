@@ -17,7 +17,6 @@ class AbstractDataExtractor(ABC):
    YEAR_COLUMN:str = get_config("YEAR_COL")
    DATA_IDENTIFIER_COLUMN:str = get_config("DATA_IDENTIFIER_COL")
    DATA_VALUE_COLUMN:str =  get_config("DATA_VALUE_COL") #nome da coluna dos valores de cada registro de dado
-   DTYPE_COLUMN:str = get_config("DTYPE_COL")
 
    def __init__(self) -> None:
       pass

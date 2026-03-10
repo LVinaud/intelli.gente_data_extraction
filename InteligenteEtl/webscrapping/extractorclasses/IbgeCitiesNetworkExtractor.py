@@ -31,11 +31,11 @@ class IbgeCitiesNetworkExtractor(AbstractDataExtractor):
          axis="columns"
       )
       df[self.DATA_VALUE_COLUMN] = df[self.DATA_VALUE_COLUMN].astype(dtype.value) #muda o tipo de dado da coluna de valores 
-      df[self.DTYPE_COLUMN] = dtype.value #add coluna de tipo de dado
       df[self.DATA_IDENTIFIER_COLUMN] = data_name #add coluna do nome do dado
 
       df = df[~df.duplicated(subset=[self.CITY_CODE_COL],keep="first")] #remove registros duplicados da coluna do codigo de municipio
       df = df.reset_index(drop=True)
+      df = self.update_city_code(df, self.CITY_CODE_COL) #atualiza código do município de 6 para 7 dígitos
 
       return ProcessedDataCollection(
          category=self.DATA_CATEGORY,

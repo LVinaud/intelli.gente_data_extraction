@@ -248,7 +248,7 @@ class AnatelExtractor(AbstractDataExtractor):
     def __build_standard_df(self, indicators_df: pd.DataFrame) -> pd.DataFrame:
         """
         Transforma o DF dos indicadores no formato padrão do Data Warehouse:
-        colunas: ano, codigo_municipio, dado_identificador, tipo_dado, valor
+        colunas: municipio_cod_ibge, variavel_sigla, tempo_ano, valor_variavel
         """
         indicator_columns = [
             'Acesso_SCM', 'Cobertura_Fibra', 'Acesso_SCM_HighSpeed',
@@ -264,7 +264,6 @@ class AnatelExtractor(AbstractDataExtractor):
                         self.YEAR_COLUMN: 2024,
                         self.CITY_CODE_COL: int(cod_ibge),
                         self.DATA_IDENTIFIER_COLUMN: indicator,
-                        self.DTYPE_COLUMN: DataTypes.FLOAT.value,
                         self.DATA_VALUE_COLUMN: row[indicator]
                     })
 

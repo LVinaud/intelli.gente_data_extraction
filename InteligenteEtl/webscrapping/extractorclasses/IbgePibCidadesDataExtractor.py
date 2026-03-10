@@ -94,6 +94,7 @@ class IbgePibCidadesDataExtractor(AbstractDataExtractor):
       
       concatenated_df:pd.DataFrame = self._concat_data_points(parsed_datapoints,add_year_col=False)
       concatenated_df = self.__change_col_dtypes(concatenated_df)
+      concatenated_df = self.update_city_code(concatenated_df, self.CITY_CODE_COL) #atualiza código do município de 6 para 7 dígitos
       
       time_series_years:list[int] = YearDataPoint.get_years_from_list(list_datapoints)
 
@@ -166,7 +167,6 @@ class IbgePibCidadesDataExtractor(AbstractDataExtractor):
       new_df[self.DATA_VALUE_COLUMN] = df[data_values_col].apply(lambda x: x*multiply_amount) #cria uma coluna do valor dos dados, multiplicando ele caso seja necessário
 
       new_df[self.DATA_IDENTIFIER_COLUMN] = data_info.value["data_name"] #coluna do nome final do dado
-      new_df[self.DTYPE_COLUMN] = data_info.value["dtype"].value #coluna do tipo de dado
 
       return ProcessedDataCollection(
          category=data_info.value["data_category"],

@@ -150,13 +150,12 @@ class EmecExtractor(AbstractDataExtractor):
         )
 
         final = pd.DataFrame({
-            self.YEAR_COLUMN: self.year,
             self.CITY_CODE_COL: counts["_ibge7"].astype(int),
             self.DATA_IDENTIFIER_COLUMN: self.data_identifier,
-            self.DTYPE_COLUMN: self.dtype_value,
+            self.YEAR_COLUMN: self.year,
             self.DATA_VALUE_COLUMN: counts[self.DATA_VALUE_COLUMN].astype(int),
         })[
-            [self.YEAR_COLUMN, self.CITY_CODE_COL, self.DATA_IDENTIFIER_COLUMN, self.DTYPE_COLUMN, self.DATA_VALUE_COLUMN]
+            [self.CITY_CODE_COL, self.DATA_IDENTIFIER_COLUMN, self.YEAR_COLUMN, self.DATA_VALUE_COLUMN]
         ].copy()
 
         if self.save_csv:

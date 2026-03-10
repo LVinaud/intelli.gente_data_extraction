@@ -26,6 +26,7 @@ class HigherEducaPositionsExtractor(AbstractDataExtractor):
       joined_df = self.__filter_and_drop_cols(joined_df) #dropa colunas desnecessárias e NaNs
       joined_df = self.__sum_city_values(joined_df)
       joined_df = self.__add_and_rename_columns(joined_df)
+      joined_df = self.update_city_code(joined_df, self.CITY_CODE_COL) #atualiza código do município de 6 para 7 dígitos
       
       collection = ProcessedDataCollection(
          category=self.DATA_TOPIC,
@@ -60,7 +61,6 @@ class HigherEducaPositionsExtractor(AbstractDataExtractor):
    def __add_and_rename_columns(self,df:pd.DataFrame)->pd.DataFrame:
 
       df[self.DATA_IDENTIFIER_COLUMN] = self.DATA_NAME #coluna do nome do dado
-      df[self.DTYPE_COLUMN] = self.DTYPE.value #coluna de tipo de dado
 
       df = df.rename(
          {

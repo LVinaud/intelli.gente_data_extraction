@@ -101,15 +101,14 @@ class RaisExtractor(AbstractDataExtractor):
       return df.loc[keep].copy()
 
    def __rename_and_add_cols(self, df: pd.DataFrame, data_point: RaisDataInfo) -> pd.DataFrame:
-      # renomeia Total -> valor
+      # renomeia Total -> valor_variavel
       df = df.rename({self.EXTRACTED_DATA_VALUE_COL: self.DATA_VALUE_COLUMN}, axis="columns")
 
       # metadados
-      df[self.DTYPE_COLUMN] = data_point.value["dtype"].value
       df[self.DATA_IDENTIFIER_COLUMN] = data_point.value["data_identifier"]
 
       # garante apenas colunas do schema (strict)
-      df = df[[self.YEAR_COLUMN, self.CITY_CODE_COL, self.DATA_IDENTIFIER_COLUMN, self.DTYPE_COLUMN, self.DATA_VALUE_COLUMN]].copy()
+      df = df[[self.CITY_CODE_COL, self.DATA_IDENTIFIER_COLUMN, self.YEAR_COLUMN, self.DATA_VALUE_COLUMN]].copy()
       return df
 
 

@@ -70,7 +70,6 @@ class SnisExtractor(AbstractDataExtractor):
          },
          axis="columns"
       )
-      df[self.DTYPE_COLUMN] = self.INDICATORS_INFO[indicator_code]["dtype"].value #coluna de tipo de dado
       df[self.DATA_IDENTIFIER_COLUMN] = self.INDICATORS_INFO[indicator_code]["name"] #coluna de nome do dado
 
       df = self.update_city_code(df,self.CITY_CODE_COL) #atualiza código de município do IBGE para 7 dígitos

@@ -123,7 +123,6 @@ class DatasusDataExtractor(AbstractDataExtractor):
 
       df = df.rename({self.EXTRACTED_TABLE_CITY_COL: self.CITY_CODE_COL},axis="columns") #troca o nome da coluna de municípios
       df[self.DATA_IDENTIFIER_COLUMN] = data_info.value["data_name"] #coloca coluna do nome do dado
-      df[self.DTYPE_COLUMN] = data_info.value["dtype"].value #coloca coluna do tipo de dado
 
       return df
    
