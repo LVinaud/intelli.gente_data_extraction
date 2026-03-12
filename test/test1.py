@@ -120,9 +120,9 @@ def parse_csv():
 if __name__ == "__main__":
    #run_Idbe()
    #run_city_gdp()
-   #run_MUNIC_base()
+   run_MUNIC_base()
    #run_datasus(data_info=DatasusDataInfo.LIVE_BIRTHS)
    #run_ANATEL()
    #run_tech_equipament()
    #run_IDH()
-   run_higher_educa()
+   #run_higher_educa()

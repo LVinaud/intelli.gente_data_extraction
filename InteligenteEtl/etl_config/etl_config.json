@@ -1,14 +1,15 @@
 {
-
-   "NUMBER_OF_CITIES" : 5570,
-   "NUMBER_OF_DIMENSIONS" : 5,
+   "NUMBER_OF_CITIES": 5570,
+   "NUMBER_OF_DIMENSIONS": 5,
    "CITY_NAME_COL": "nome_municipio",
    "CITY_CODE_COL": "municipio_cod_ibge",
-   "YEAR_COL": "tempo_ano",
+   "YEAR_COL": "ano",
    "DATA_IDENTIFIER_COL": "variavel_sigla",
-   "DATA_VALUE_COL": "valor_variavel",
+   "DATA_VALUE_COL": "variavel_valor",
    "OLDEST_YEAR": 1980,
    "SMALLEST_CITY_CODE": 1000000,
    "HIGHEST_CITY_CODE": 9999999,
-   "CLASSES_WITH_SEVERAL_INDICATORS": ["DatasusDataExtractor"]
+   "CLASSES_WITH_SEVERAL_INDICATORS": [
+      "DatasusDataExtractor"
+   ]
 }

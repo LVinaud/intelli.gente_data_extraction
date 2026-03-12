@@ -39,6 +39,15 @@ class ProcessedDataCollection:
     
    def __init__(self, category: str, dtype: DataTypes, data_name: str, time_series_years: list[int], df: pd.DataFrame) -> None:
         df = self.DF_SCHEMA.validate(df) #valida o schema do df passado como argumento
+        
+        ordered_cols = [
+            get_config("CITY_CODE_COL"), 
+            get_config("DATA_IDENTIFIER_COL"), 
+            get_config("YEAR_COL"),
+            get_config("DATA_VALUE_COL")
+        ]
+        df = df[ordered_cols].copy()
+        
         self.category = category
         self.dtype = dtype
         self.data_name = data_name
