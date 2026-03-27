@@ -13,12 +13,14 @@ class AnatelExtractor(AbstractDataExtractor):
 
     Indicadores calculados:
         1. Acesso_SCM - Escala de acesso a banda larga fixa
-        2. Cobertura_Fibra - Cobertura de fibra ótica
-        3. Acesso_SCM_HighSpeed - Acesso a banda larga fixa de alta velocidade
-        4. Acesso_Banda_Larga_Movel - Acesso a banda larga móvel (3G/4G)
-        5. Cobertura_3G_4G - Cobertura de rede 3G/4G
-        6. Cobertura_5G - Cobertura de rede 5G
-        7. QNTD_EST_SMP - Quantidade de estações SMP
+        2. ECFO - Cobertura de fibra ótica
+        3. Acesso_SCM>=12Mbps - Acesso a banda larga fixa de alta velocidade
+        4. TOT_ACESSOS_3G - Total de acessos 3G
+        5. TOT_ACESSOS_4G_WCMDA - Total de acessos 4G
+        6. EC3G - Cobertura de rede 3G
+        7. EC4G - Cobertura de rede 4G
+        8. COB5G - Cobertura de rede 5G
+        9. QNTD_EST_SMP - Quantidade de estações SMP
     """
 
     __scrapper: AnatelScrapper = AnatelScrapper()
@@ -36,7 +38,7 @@ class AnatelExtractor(AbstractDataExtractor):
     }
 
     def __process_fixed_broadband(self, download_dir: str) -> pd.DataFrame:
-        """Processa indicadores de banda larga fixa (Acesso_SCM, Cobertura_Fibra, Acesso_SCM_HighSpeed)."""
+        """Processa indicadores de banda larga fixa (Acesso_SCM, ECFO, Acesso_SCM>=12Mbps)."""
         input_file = os.path.join(download_dir, 'Acessos_Banda_Larga_Fixa_2025.csv')
         print(f"Loading fixed broadband data from {input_file}...")
 
@@ -53,18 +55,18 @@ class AnatelExtractor(AbstractDataExtractor):
         acesso_scm = df.groupby('Código IBGE Município')['Acessos'].sum().reset_index()
         acesso_scm.rename(columns={'Acessos': 'Acesso_SCM'}, inplace=True)
 
-        # Indicator 2: Cobertura_Fibra (1 se existe acesso via fibra, 0 caso contrário)
-        print("Calculating Cobertura_Fibra...")
+        # Indicator 2: ECFO (1 se existe acesso via fibra, 0 caso contrário)
+        print("Calculating ECFO...")
         df['is_fiber'] = (df['Meio de Acesso'] == 'Fibra').astype(int)
         cobertura_fibra = df.groupby('Código IBGE Município')['is_fiber'].max().reset_index()
-        cobertura_fibra.rename(columns={'is_fiber': 'Cobertura_Fibra'}, inplace=True)
+        cobertura_fibra.rename(columns={'is_fiber': 'ECFO'}, inplace=True)
 
-        # Indicator 3: Acesso_SCM_HighSpeed (acessos >= 12Mbps)
-        print("Calculating Acesso_SCM_HighSpeed...")
+        # Indicator 3: Acesso_SCM>=12Mbps (acessos >= 12Mbps)
+        print("Calculating Acesso_SCM>=12Mbps...")
         high_speed_ranges = ['12Mbps a 34Mbps', '> 34Mbps']
         df_high_speed = df[df['Faixa de Velocidade'].isin(high_speed_ranges)]
         acesso_high_speed = df_high_speed.groupby('Código IBGE Município')['Acessos'].sum().reset_index()
-        acesso_high_speed.rename(columns={'Acessos': 'Acesso_SCM_HighSpeed'}, inplace=True)
+        acesso_high_speed.rename(columns={'Acessos': 'Acesso_SCM>=12Mbps'}, inplace=True)
 
         # Merge dos indicadores de banda larga fixa
         print("Merging fixed broadband indicators...")
@@ -73,20 +75,21 @@ class AnatelExtractor(AbstractDataExtractor):
         fixed_df = fixed_df.merge(acesso_high_speed, on='Código IBGE Município', how='outer')
 
         fixed_df['Acesso_SCM'] = fixed_df['Acesso_SCM'].fillna(0)
-        fixed_df['Acesso_SCM_HighSpeed'] = fixed_df['Acesso_SCM_HighSpeed'].fillna(0)
-        fixed_df['Cobertura_Fibra'] = fixed_df['Cobertura_Fibra'].fillna(0).astype(int)
+        fixed_df['Acesso_SCM>=12Mbps'] = fixed_df['Acesso_SCM>=12Mbps'].fillna(0)
+        fixed_df['ECFO'] = fixed_df['ECFO'].fillna(0).astype(int)
 
         return fixed_df
 
     def __process_mobile(self, download_dir: str) -> tuple:
-        """Processa indicadores de telefonia móvel (Acesso_Banda_Larga_Movel, Cobertura_3G_4G, Cobertura_5G)."""
+        """Processa indicadores de telefonia móvel (TOT_ACESSOS_3G, TOT_ACESSOS_4G_WCMDA, EC3G, EC4G, COB5G)."""
         mobile_input_file = os.path.join(download_dir, 'Acessos_Telefonia_Movel_2025_2S.csv')
         print(f"Loading mobile data from {mobile_input_file}...")
 
         chunk_size = 500000
         mobile_columns = ['Mês', 'Tipo de Produto', 'Tecnologia Geração', 'Acessos', 'Código IBGE Município']
 
-        acesso_mobile_accum = []
+        acesso_3g_accum = []
+        acesso_4g_accum = []
         coverage_accum = []
 
         try:
@@ -99,13 +102,18 @@ class AnatelExtractor(AbstractDataExtractor):
 
                 chunk['Acessos'] = pd.to_numeric(chunk['Acessos'], errors='coerce').fillna(0)
 
-                # Indicator 4: Acesso via 3G/4G
-                chunk_3g_4g = chunk[chunk['Tecnologia Geração'].isin(['3G', '4G'])]
-                if not chunk_3g_4g.empty:
-                    agg_acesso = chunk_3g_4g.groupby('Código IBGE Município')['Acessos'].sum().reset_index()
-                    acesso_mobile_accum.append(agg_acesso)
+                # Indicator 4 & 5: Acesso via 3G e 4G separados
+                chunk_3g = chunk[chunk['Tecnologia Geração'] == '3G']
+                if not chunk_3g.empty:
+                    agg_acesso_3g = chunk_3g.groupby('Código IBGE Município')['Acessos'].sum().reset_index()
+                    acesso_3g_accum.append(agg_acesso_3g)
 
-                # Indicators 5 & 6: Flags de cobertura
+                chunk_4g = chunk[chunk['Tecnologia Geração'] == '4G']
+                if not chunk_4g.empty:
+                    agg_acesso_4g = chunk_4g.groupby('Código IBGE Município')['Acessos'].sum().reset_index()
+                    acesso_4g_accum.append(agg_acesso_4g)
+
+                # Indicators 5 & 6 (now shifted): Flags de cobertura
                 chunk['has_3g'] = (chunk['Tecnologia Geração'] == '3G').astype(int)
                 chunk['has_4g'] = (chunk['Tecnologia Geração'] == '4G').astype(int)
                 chunk['has_5g'] = (chunk['Tecnologia Geração'] == '5G').astype(int)
@@ -115,33 +123,43 @@ class AnatelExtractor(AbstractDataExtractor):
 
         except Exception as e:
             print(f"Error loading mobile data: {e}")
-            return pd.DataFrame(), pd.DataFrame(), pd.DataFrame()
+            return pd.DataFrame(), pd.DataFrame(), pd.DataFrame(), pd.DataFrame(), pd.DataFrame()
 
         print("Aggregating mobile results...")
 
-        # Agregação final de acessos
-        if acesso_mobile_accum:
-            acesso_mobile_total = pd.concat(acesso_mobile_accum)
-            acesso_mobile_final = acesso_mobile_total.groupby('Código IBGE Município')['Acessos'].sum().reset_index()
-            acesso_mobile_final.rename(columns={'Acessos': 'Acesso_Banda_Larga_Movel'}, inplace=True)
+        # Agregação final de acessos 3G e 4G
+        if acesso_3g_accum:
+            acesso_3g_total = pd.concat(acesso_3g_accum)
+            acesso_3g_final = acesso_3g_total.groupby('Código IBGE Município')['Acessos'].sum().reset_index()
+            acesso_3g_final.rename(columns={'Acessos': 'TOT_ACESSOS_3G'}, inplace=True)
         else:
-            acesso_mobile_final = pd.DataFrame(columns=['Código IBGE Município', 'Acesso_Banda_Larga_Movel'])
+            acesso_3g_final = pd.DataFrame(columns=['Código IBGE Município', 'TOT_ACESSOS_3G'])
+
+        if acesso_4g_accum:
+            acesso_4g_total = pd.concat(acesso_4g_accum)
+            acesso_4g_final = acesso_4g_total.groupby('Código IBGE Município')['Acessos'].sum().reset_index()
+            acesso_4g_final.rename(columns={'Acessos': 'TOT_ACESSOS_4G_WCMDA'}, inplace=True)
+        else:
+            acesso_4g_final = pd.DataFrame(columns=['Código IBGE Município', 'TOT_ACESSOS_4G_WCMDA'])
 
         # Agregação final de cobertura
         if coverage_accum:
             coverage_total = pd.concat(coverage_accum)
             coverage_final = coverage_total.groupby('Código IBGE Município')[['has_3g', 'has_4g', 'has_5g']].max().reset_index()
 
-            coverage_final['Cobertura_3G_4G'] = (coverage_final['has_3g'] * 1) + (coverage_final['has_4g'] * 2)
-            coverage_final['Cobertura_5G'] = coverage_final['has_5g'] * 3
+            coverage_final['EC3G'] = coverage_final['has_3g']
+            coverage_final['EC4G'] = coverage_final['has_4g']
+            coverage_final['COB5G'] = coverage_final['has_5g'] * 3
 
-            coverage_3g_4g = coverage_final[['Código IBGE Município', 'Cobertura_3G_4G']]
-            coverage_5g = coverage_final[['Código IBGE Município', 'Cobertura_5G']]
+            coverage_ec3g = coverage_final[['Código IBGE Município', 'EC3G']]
+            coverage_ec4g = coverage_final[['Código IBGE Município', 'EC4G']]
+            coverage_5g = coverage_final[['Código IBGE Município', 'COB5G']]
         else:
-            coverage_3g_4g = pd.DataFrame(columns=['Código IBGE Município', 'Cobertura_3G_4G'])
-            coverage_5g = pd.DataFrame(columns=['Código IBGE Município', 'Cobertura_5G'])
+            coverage_ec3g = pd.DataFrame(columns=['Código IBGE Município', 'EC3G'])
+            coverage_ec4g = pd.DataFrame(columns=['Código IBGE Município', 'EC4G'])
+            coverage_5g = pd.DataFrame(columns=['Código IBGE Município', 'COB5G'])
 
-        return acesso_mobile_final, coverage_3g_4g, coverage_5g
+        return acesso_3g_final, acesso_4g_final, coverage_ec3g, coverage_ec4g, coverage_5g
 
     def __process_estacoes_smp(self, download_dir: str, final_df: pd.DataFrame) -> pd.DataFrame:
         """Processa indicador QNTD_EST_SMP (quantidade de estações SMP por município)."""
@@ -205,18 +223,21 @@ class AnatelExtractor(AbstractDataExtractor):
         fixed_df = self.__process_fixed_broadband(download_dir)
 
         print("\n--- Processing mobile indicators ---")
-        acesso_mobile_final, coverage_3g_4g, coverage_5g = self.__process_mobile(download_dir)
+        acesso_3g_final, acesso_4g_final, coverage_ec3g, coverage_ec4g, coverage_5g = self.__process_mobile(download_dir)
 
         # 3. Merge de todos os indicadores
         print("\n--- Merging all indicators ---")
-        final_df = fixed_df.merge(acesso_mobile_final, on='Código IBGE Município', how='outer')
-        final_df = final_df.merge(coverage_3g_4g, on='Código IBGE Município', how='outer')
+        final_df = fixed_df.merge(acesso_3g_final, on='Código IBGE Município', how='outer')
+        final_df = final_df.merge(acesso_4g_final, on='Código IBGE Município', how='outer')
+        final_df = final_df.merge(coverage_ec3g, on='Código IBGE Município', how='outer')
+        final_df = final_df.merge(coverage_ec4g, on='Código IBGE Município', how='outer')
         final_df = final_df.merge(coverage_5g, on='Código IBGE Município', how='outer')
 
         final_df = final_df.fillna(0)
-        final_df['Cobertura_Fibra'] = final_df['Cobertura_Fibra'].astype(int)
-        final_df['Cobertura_3G_4G'] = final_df['Cobertura_3G_4G'].astype(int)
-        final_df['Cobertura_5G'] = final_df['Cobertura_5G'].astype(int)
+        final_df['ECFO'] = final_df['ECFO'].astype(int)
+        final_df['EC3G'] = final_df['EC3G'].astype(int)
+        final_df['EC4G'] = final_df['EC4G'].astype(int)
+        final_df['COB5G'] = final_df['COB5G'].astype(int)
 
         # 4. Indicador de estações SMP
         print("\n--- Processing QNTD_EST_SMP ---")
@@ -230,13 +251,31 @@ class AnatelExtractor(AbstractDataExtractor):
 
         print(final_df.head())
 
-        # 6. Retornar como ProcessedDataCollection
+        # 6. Salvar arquivos CSVs para cada variável dinamicamente
+        final_standard_df = self.__build_standard_df(final_df)
+        
+        for sigla in final_standard_df[self.DATA_IDENTIFIER_COLUMN].unique():
+            df_var = final_standard_df[final_standard_df[self.DATA_IDENTIFIER_COLUMN] == sigla].copy()
+            df_var.rename(columns={
+                self.CITY_CODE_COL: 'codigo_ibge',
+                self.DATA_IDENTIFIER_COLUMN: 'sigla',
+                self.YEAR_COLUMN: 'ano',
+                self.DATA_VALUE_COLUMN: 'variavel_valor'
+            }, inplace=True)
+            if not df_var.empty:
+                df_var = df_var[['codigo_ibge', 'sigla', 'ano', 'variavel_valor']]
+            
+            var_output = os.path.join(download_dir, f"{sigla}.csv")
+            df_var.to_csv(var_output, index=False, sep=';', encoding='utf-8')
+            print(f"Saved {sigla} to {var_output} ({len(df_var)} rows)")
+
+        # 7. Retornar como ProcessedDataCollection
         data_collection = ProcessedDataCollection(
             category="Telecomunicações",
             dtype=DataTypes.FLOAT,
             data_name="anatel_indicators",
             time_series_years=[2025],
-            df=self.__build_standard_df(final_df)
+            df=final_standard_df
         )
 
         print("\n" + "=" * 60)
@@ -251,8 +290,8 @@ class AnatelExtractor(AbstractDataExtractor):
         colunas: municipio_cod_ibge, variavel_sigla, tempo_ano, valor_variavel
         """
         indicator_columns = [
-            'Acesso_SCM', 'Cobertura_Fibra', 'Acesso_SCM_HighSpeed',
-            'Acesso_Banda_Larga_Movel', 'Cobertura_3G_4G', 'Cobertura_5G', 'QNTD_EST_SMP'
+            'Acesso_SCM', 'ECFO', 'Acesso_SCM>=12Mbps',
+            'TOT_ACESSOS_3G', 'TOT_ACESSOS_4G_WCMDA', 'EC3G', 'EC4G', 'COB5G', 'QNTD_EST_SMP'
         ]
 
         rows = []
