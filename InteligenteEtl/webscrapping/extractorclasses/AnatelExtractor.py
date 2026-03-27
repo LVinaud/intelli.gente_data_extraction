@@ -37,7 +37,7 @@ class AnatelExtractor(AbstractDataExtractor):
 
     def __process_fixed_broadband(self, download_dir: str) -> pd.DataFrame:
         """Processa indicadores de banda larga fixa (Acesso_SCM, Cobertura_Fibra, Acesso_SCM_HighSpeed)."""
-        input_file = os.path.join(download_dir, 'Acessos_Banda_Larga_Fixa_2024.csv')
+        input_file = os.path.join(download_dir, 'Acessos_Banda_Larga_Fixa_2025.csv')
         print(f"Loading fixed broadband data from {input_file}...")
 
         try:
@@ -80,7 +80,7 @@ class AnatelExtractor(AbstractDataExtractor):
 
     def __process_mobile(self, download_dir: str) -> tuple:
         """Processa indicadores de telefonia móvel (Acesso_Banda_Larga_Movel, Cobertura_3G_4G, Cobertura_5G)."""
-        mobile_input_file = os.path.join(download_dir, 'Acessos_Telefonia_Movel_2024_2S.csv')
+        mobile_input_file = os.path.join(download_dir, 'Acessos_Telefonia_Movel_2025_2S.csv')
         print(f"Loading mobile data from {mobile_input_file}...")
 
         chunk_size = 500000
@@ -92,7 +92,7 @@ class AnatelExtractor(AbstractDataExtractor):
         try:
             for chunk in pd.read_csv(mobile_input_file, sep=';', decimal=',', encoding='utf-8-sig',
                                      usecols=mobile_columns, chunksize=chunk_size):
-                # Filtra dezembro 2024 e VOZ+DADOS
+                # Filtra dezembro 2025 e VOZ+DADOS
                 chunk = chunk[(chunk['Mês'] == 12) & (chunk['Tipo de Produto'] == 'VOZ+DADOS')]
                 if chunk.empty:
                     continue
@@ -235,7 +235,7 @@ class AnatelExtractor(AbstractDataExtractor):
             category="Telecomunicações",
             dtype=DataTypes.FLOAT,
             data_name="anatel_indicators",
-            time_series_years=[2024],
+            time_series_years=[2025],
             df=self.__build_standard_df(final_df)
         )
 
@@ -261,7 +261,7 @@ class AnatelExtractor(AbstractDataExtractor):
             for indicator in indicator_columns:
                 if indicator in row.index:
                     rows.append({
-                        self.YEAR_COLUMN: 2024,
+                        self.YEAR_COLUMN: 2025,
                         self.CITY_CODE_COL: int(cod_ibge),
                         self.DATA_IDENTIFIER_COLUMN: indicator,
                         self.DATA_VALUE_COLUMN: row[indicator]

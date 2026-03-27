@@ -13,21 +13,21 @@ def run_datasus(data_info: DatasusDataInfo)->pd.DataFrame:
    processed_data = extractor.extract_processed_collection(data_info)
    for collect in processed_data:
       print(collect.df.info())
-      collect.df.to_csv(f"{collect.data_name}.csv")
+      collect.df.rename(columns={'municipio_cod_ibge':'codigo_ibge', 'variavel_sigla':'sigla', 'ano':'ano', 'variavel_valor':'variavel_valor'})[['codigo_ibge', 'sigla', 'ano', 'variavel_valor']].to_csv(f"{collect.data_name}.csv")
 
 def run_city_gdp()->None:
    extractor = IbgePibCidadesDataExtractor()
    list_ = extractor.extract_processed_collection()
 
    for collec in list_:
-      collec.df.to_csv(f"{collec.data_name}.csv")
+      collec.df.rename(columns={'municipio_cod_ibge':'codigo_ibge', 'variavel_sigla':'sigla', 'ano':'ano', 'variavel_valor':'variavel_valor'})[['codigo_ibge', 'sigla', 'ano', 'variavel_valor']].to_csv(f"{collec.data_name}.csv")
 
 def run_MUNIC_base()->list[YearDataPoint]:
    extractor = IbgeMunicExtractor()
    collections = extractor.extract_processed_collection()
    for collect in collections:
       print(collect.df.info())
-      collect.df.to_csv(f"{collect.data_name}.csv")
+      collect.df.rename(columns={'municipio_cod_ibge':'codigo_ibge', 'variavel_sigla':'sigla', 'ano':'ano', 'variavel_valor':'variavel_valor'})[['codigo_ibge', 'sigla', 'ano', 'variavel_valor']].to_csv(f"{collect.data_name}.csv")
 
 def run_api_agregados():
    api = IbgeAgregatesApi()
@@ -55,34 +55,34 @@ def run_IDH():
    collections = extractor.extract_processed_collection()
    for collect in collections:
       print(collect.df.info())
-      collect.df.to_csv("idh-m.csv",index=False)
+      collect.df.rename(columns={'municipio_cod_ibge':'codigo_ibge', 'variavel_sigla':'sigla', 'ano':'ano', 'variavel_valor':'variavel_valor'})[['codigo_ibge', 'sigla', 'ano', 'variavel_valor']].to_csv("idh-m.csv",index=False)
 
 def run_ANATEL():
    extractor = AnatelExtractor()
    list_ = extractor.extract_processed_collection()
    for collect in list_:
       print(collect.df.info())
-      collect.df.to_csv(f"{collect.data_name}.csv")
+      collect.df.rename(columns={'municipio_cod_ibge':'codigo_ibge', 'variavel_sigla':'sigla', 'ano':'ano', 'variavel_valor':'variavel_valor'})[['codigo_ibge', 'sigla', 'ano', 'variavel_valor']].to_csv(f"{collect.data_name}.csv")
 
 def ibge_cities_network():
    extractor = IbgeCitiesNetworkExtractor()
    list_ = extractor.extract_processed_collection()
    for collection in list_:
       print(collection.df.info())
-      collection.df.to_csv(f"{collection.data_name}.csv",index=False)
+      collection.df.rename(columns={'municipio_cod_ibge':'codigo_ibge', 'variavel_sigla':'sigla', 'ano':'ano', 'variavel_valor':'variavel_valor'})[['codigo_ibge', 'sigla', 'ano', 'variavel_valor']].to_csv(f"{collection.data_name}.csv",index=False)
 
 def run_snis():
    extractor = SnisExtractor()
    list_ = extractor.extract_processed_collection()
 
    for ele in list_:
-      ele.df.to_csv(f"{ele.data_name}.csv")
+      ele.df.rename(columns={'municipio_cod_ibge':'codigo_ibge', 'variavel_sigla':'sigla', 'ano':'ano', 'variavel_valor':'variavel_valor'})[['codigo_ibge', 'sigla', 'ano', 'variavel_valor']].to_csv(f"{ele.data_name}.csv")
 
 def run_tech_equipament():
     extractor = TechEquipamentExtractor()
     collection = extractor.extract_processed_collection()
     for colec in collection:
-      colec.df.to_csv(f"{colec.data_name}.csv")
+      colec.df.rename(columns={'municipio_cod_ibge':'codigo_ibge', 'variavel_sigla':'sigla', 'ano':'ano', 'variavel_valor':'variavel_valor'})[['codigo_ibge', 'sigla', 'ano', 'variavel_valor']].to_csv(f"{colec.data_name}.csv")
 
 def run_Idbe():
    extractor = idebFinalYearsExtractor()
@@ -91,21 +91,21 @@ def run_Idbe():
 
    for colec in collection:
       print(colec.data_name)
-      colec.df.to_csv(f"{colec.data_name}.csv")
+      colec.df.rename(columns={'municipio_cod_ibge':'codigo_ibge', 'variavel_sigla':'sigla', 'ano':'ano', 'variavel_valor':'variavel_valor'})[['codigo_ibge', 'sigla', 'ano', 'variavel_valor']].to_csv(f"{colec.data_name}.csv")
 
 def run_higher_educa():
    extractor = HigherEducaPositionsExtractor()
    collection = extractor.extract_processed_collection()
    for colec in collection:
       print(colec.df.info())
-      colec.df.to_csv(f"{colec.data_name}.csv")
+      colec.df.rename(columns={'municipio_cod_ibge':'codigo_ibge', 'variavel_sigla':'sigla', 'ano':'ano', 'variavel_valor':'variavel_valor'})[['codigo_ibge', 'sigla', 'ano', 'variavel_valor']].to_csv(f"{colec.data_name}.csv")
 
 def run_school_distortion():
    extractor = SchoolDistortionRatesExtractor()
    collection = extractor.extract_processed_collection()
    for colec in collection:
       print(colec.df.info())
-      colec.df.to_csv(f"{colec.data_name}.csv")
+      colec.df.rename(columns={'municipio_cod_ibge':'codigo_ibge', 'variavel_sigla':'sigla', 'ano':'ano', 'variavel_valor':'variavel_valor'})[['codigo_ibge', 'sigla', 'ano', 'variavel_valor']].to_csv(f"{colec.data_name}.csv")
 
 def parse_csv():
    import os
@@ -120,9 +120,9 @@ def parse_csv():
 if __name__ == "__main__":
    #run_Idbe()
    #run_city_gdp()
-   run_MUNIC_base()
+   #run_MUNIC_base()
    #run_datasus(data_info=DatasusDataInfo.LIVE_BIRTHS)
-   #run_ANATEL()
+   run_ANATEL()
    #run_tech_equipament()
    #run_IDH()
    #run_higher_educa()

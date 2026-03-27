@@ -34,7 +34,7 @@ class RaisExtractor(AbstractDataExtractor):
       fname = f"rais_{data_point.name}_{year}.csv"
       out_path = out_dir / fname
 
-      df.to_csv(out_path, index=False, sep=self.output_sep, encoding=self.output_encoding)
+      df.rename(columns={self.CITY_CODE_COL: 'codigo_ibge', self.DATA_IDENTIFIER_COLUMN: 'sigla', self.YEAR_COLUMN: 'ano', self.DATA_VALUE_COLUMN: 'variavel_valor'})[['codigo_ibge', 'sigla', 'ano', 'variavel_valor']].to_csv(out_path, index=False, sep=self.output_sep, encoding=self.output_encoding)
       return str(out_path)
 
    def extract_processed_collection(self) -> list[ProcessedDataCollection]:

@@ -105,7 +105,7 @@ class EmecExtractor(AbstractDataExtractor):
         out_dir = Path(self.output_dir)
         out_dir.mkdir(parents=True, exist_ok=True)
         out_path = out_dir / f"emec_{self.data_identifier}_{self.year}.csv"
-        df.to_csv(out_path, index=False, sep=self.output_sep, encoding=self.output_encoding)
+        df.rename(columns={self.CITY_CODE_COL: 'codigo_ibge', self.DATA_IDENTIFIER_COLUMN: 'sigla', self.YEAR_COLUMN: 'ano', self.DATA_VALUE_COLUMN: 'variavel_valor'})[['codigo_ibge', 'sigla', 'ano', 'variavel_valor']].to_csv(out_path, index=False, sep=self.output_sep, encoding=self.output_encoding)
         return str(out_path)
 
     def extract_processed_collection(self) -> list[ProcessedDataCollection]:

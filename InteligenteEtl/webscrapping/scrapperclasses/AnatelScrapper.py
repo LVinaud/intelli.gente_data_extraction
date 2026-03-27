@@ -19,11 +19,11 @@ class AnatelScrapper(AbstractScrapper):
     ESTACOES_URL = "https://informacoes.anatel.gov.br/paineis/outorga-e-licenciamento/estacoes-do-smp"
 
     def download_data(self):
-        # Define download directory: .../intelli.gente_data_extraction/anatel_2024
+        # Define download directory: .../intelli.gente_data_extraction/anatel_2025
         # Assuming this file is in .../InteligenteEtl/webscrapping/scrapperclasses/
         # base_dir should be .../intelli.gente_data_extraction
         base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
-        download_dir = os.path.join(base_dir, 'anatel_2024')
+        download_dir = os.path.join(base_dir, 'anatel_2025')
         
         if not os.path.exists(download_dir):
             os.makedirs(download_dir)
@@ -242,16 +242,16 @@ class AnatelScrapper(AbstractScrapper):
         
         # Filter relevant files
         # We want to keep:
-        # - Acessos_Banda_Larga_Fixa_2024.csv
-        # - Acessos_Telefonia_Movel_2024_1S.csv
-        # - Acessos_Telefonia_Movel_2024_2S.csv
+        # - Acessos_Banda_Larga_Fixa_2025.csv
+        # - Acessos_Telefonia_Movel_2025_1S.csv
+        # - Acessos_Telefonia_Movel_2025_2S.csv
         # - estacoes_municipio_faixa.xlsx (if present)
         # - broadband_indicators.csv (output file)
         
         keep_patterns = [
-            "Acessos_Banda_Larga_Fixa_2024.csv",
-            "Acessos_Telefonia_Movel_2024_1S.csv",
-            "Acessos_Telefonia_Movel_2024_2S.csv",
+            "Acessos_Banda_Larga_Fixa_2025.csv",
+            "Acessos_Telefonia_Movel_2025_1S.csv",
+            "Acessos_Telefonia_Movel_2025_2S.csv",
             "estacoes_municipio_faixa.xlsx",
             "estacoes_municipio_faixa.csv",
             "broadband_indicators.csv",
@@ -276,7 +276,7 @@ class AnatelScrapper(AbstractScrapper):
     def extract_database(self) -> str:
         self.download_data()
         base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
-        download_dir = os.path.join(base_dir, 'anatel_2024')
+        download_dir = os.path.join(base_dir, 'anatel_2025')
         return download_dir
 
 if __name__ == "__main__":
