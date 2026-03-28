@@ -47,12 +47,13 @@ class IbgeMunicExtractor(AbstractDataExtractor):
                                    self.DATA_VALUE_COLUMN : value_column})
                 if data_infomations[data_name]['tipo'] == 'bool':
                     self.__map_binary_to_bool(df)
-                
+
+                df = df.dropna(subset=[self.DATA_VALUE_COLUMN]).reset_index(drop=True)
                 df = self.update_city_code(df, self.CITY_CODE_COL) #atualiza código do município de 6 para 7 dígitos
                 data_collections.append(ProcessedDataCollection(
                     category=data_infomations[data_name]['categoria'],
                     dtype=DataTypes.from_string(data_infomations[data_name]['tipo']),
-                    data_name=data_name + " - " + data_codes_per_year[str(year)][data_name],
+                    data_name=(data_name + " - " + data_codes_per_year[str(year)][data_name]).replace("/", "-"),
                     time_series_years=[year],
                     df = df
                 ))

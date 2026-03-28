@@ -4,13 +4,15 @@ from datastructures import YearDataPoint
 import pandas as pd
 
 class IbgeMunicScrapper(IbgePibCidadesScrapper):
-   
+
    #a base MUNI de municípios do IBGE  tem um link diferente para os dados de cada ano, pelo menos isso é oq da pra ver no HTML da página
    URL_FOR_EACH_YEAR:dict[int,str] = {
+      2024 : "https://ftp.ibge.gov.br/Perfil_Municipios/2024/Base_de_Dados/Base_MUNIC_2024_20251107.xlsx",
+      2023 : "https://ftp.ibge.gov.br/Perfil_Municipios/2023/Base_de_Dados/Base_MUNIC_2023.xlsx",
       2021 : "https://ftp.ibge.gov.br/Perfil_Municipios/2021/Base_de_Dados/Base_MUNIC_2021_20240425.xlsx",
       2020 : "https://ftp.ibge.gov.br/Perfil_Municipios/2020/Base_de_Dados/Base_MUNIC_2020.xlsx",
       2019 : "https://ftp.ibge.gov.br/Perfil_Municipios/2019/Base_de_Dados/Base_MUNIC_2019_20210817.xlsx",
-      # 2018: "https://ftp.ibge.gov.br/Perfil_Municipios/2018/Base_de_Dados/Base_MUNIC_2018_xlsx_20201103.zip", 
+      # 2018: "https://ftp.ibge.gov.br/Perfil_Municipios/2018/Base_de_Dados/Base_MUNIC_2018_xlsx_20201103.zip",
       # 2017 : "https://ftp.ibge.gov.br/Perfil_Municipios/2017/Base_de_Dados/Base_MUNIC_2017_xls.zip",
       # 2015 : "https://ftp.ibge.gov.br/Perfil_Municipios/2015/Base_de_Dados/Base_MUNIC_2015_xls.zip",
       # 2014 : "https://ftp.ibge.gov.br/Perfil_Municipios/2014/base_MUNIC_xls_2014.zip",
@@ -24,7 +26,21 @@ class IbgeMunicScrapper(IbgePibCidadesScrapper):
       # 2004: "https://ftp.ibge.gov.br/Perfil_Municipios/2004/base_MUNIC_2004.zip"
    }
 
+   # Anos onde o IBGE usou 'Recursos humanos' como aba administrativa principal.
+   # Para esses anos a lógica padrão (sheets[-1] como df base) não funciona porque:
+   # 1) a última aba é temática (pode ter cobertura parcial, ex: só RS) ou não tem CodMun consistente
+   # 2) algumas abas temáticas usam 'Cod Munic' em vez de 'CodMun' — normalizado no loop de merge
+   MAIN_SHEET_OVERRIDE: dict[int, str] = {
+      2023: 'Recursos humanos',
+      2024: 'Recursos humanos',
+   }
+
    REDUNDANT_COLUMNS:dict[int,list[str]] = {
+      # Colunas administrativas confirmadas via inspeção das planilhas brutas 2023/2024
+      2024 : ['UF', 'Uf', 'Sigla UF', 'Cod UF', 'Cod Uf', 'Mun', 'Desc Mun',
+              'Populacao', 'PopMun', 'Faixa_pop', 'Faixa_populacao', 'Regiao'],
+      2023 : ['Sigla UF', 'UF', 'Uf', 'Cod UF', 'Cod Uf',
+              'Mun', 'Desc Mun', 'PopMun', 'Faixa_pop', 'Regiao'],
       2021 : ['UF', 'Cod UF', 'Mun', 'Pop', 'Pop estimada 2021', 'Faixa_pop', 'Regiao'],
       2020 : ['UF', 'Cod UF', 'Mun', 'Faixa_pop', 'Regiao'],
       2019 : ['UF', 'COD UF', 'NOME MUNIC', 'CLASSE POP', 'REGIAO'],
@@ -45,6 +61,9 @@ class IbgeMunicScrapper(IbgePibCidadesScrapper):
    }
 
    EXTERNAL_VARIABLES_RENAMES:dict[int,dict[str,str]] = {
+      # 2023/2024: 'Recursos humanos' é a aba base — não há colunas que precisem de renomeação
+      2024 : {},
+      2023 : {},
       2021 : {"Pop estimada 2021": "Populacao"},
       2020 : {},
       2019 : {"REGIAO": "Regiao", "COD UF" : "Cod UF", "NOME MUNIC" : "Mun", "POP EST" : "Populacao", "CLASSE POP" : "Faixa_pop"},
@@ -63,6 +82,8 @@ class IbgeMunicScrapper(IbgePibCidadesScrapper):
    }
 
    EXTERNAL_VARIABLES_DROPS:dict[int,list[str]] = {
+      2024 : [],
+      2023 : [],
       2021 : [],
       2020 : [],
       2019 : [],
@@ -105,14 +126,15 @@ class IbgeMunicScrapper(IbgePibCidadesScrapper):
          excel_file = pd.ExcelFile(path)
          sheets = excel_file.sheet_names
 
-         df = pd.read_excel(excel_file, sheets[-1])
+         main_sheet = self.MAIN_SHEET_OVERRIDE.get(year, sheets[-1])
+         df = pd.read_excel(excel_file, main_sheet)
          df = df.rename(columns=self.EXTERNAL_VARIABLES_RENAMES[year])
          df = df.drop(columns=self.EXTERNAL_VARIABLES_DROPS[year])
 
-         sheets_to_ignore = [sheets[-1], sheets[0]]
+         sheets_to_ignore = [main_sheet, sheets[0]]
          if(year==2017):
             sheets_to_ignore.append(sheets[1])
-         
+
          for sheet in sheets_to_ignore:
             sheets.remove(sheet)
 
@@ -120,6 +142,11 @@ class IbgeMunicScrapper(IbgePibCidadesScrapper):
 
          for sheet in sheets:
             df_sheet = pd.read_excel(excel_file, sheet)
+            # Normaliza o nome da coluna de código do município: o IBGE usa nomes
+            # inconsistentes entre abas em alguns anos (ex: 'Cod Munic' vs 'CodMun' em 2024)
+            first_col = df_sheet.columns[0]
+            if first_col != city_code:
+               df_sheet = df_sheet.rename(columns={first_col: city_code})
             if((year==2019 and sheet=='Recursos humanos') or (year==2013 and sheet=='Legislação')):
                df_sheet = df_sheet[df_sheet[city_code].notna()]
             df_sheet = df_sheet.drop(columns=self.REDUNDANT_COLUMNS[year], errors='ignore')
@@ -142,7 +169,3 @@ class IbgeMunicScrapper(IbgePibCidadesScrapper):
 
       print("fim scrapper")
       return data_list
-      
-
-
-
