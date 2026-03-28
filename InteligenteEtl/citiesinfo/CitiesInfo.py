@@ -11,8 +11,8 @@ Os dados estão reunidos no arquivo "info_municipios_ibge.csv" e são extraidos 
 
 __CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 __CSV_FILE_PATH = os.path.join(__CURRENT_DIR,"info_municipios_ibge.csv")
-__CITY_CODE_COL =  get_config("CITY_CODE_COL")
-__CITY_NAME_COL = get_config("CITY_NAME_COL")
+__CITY_CODE_COL = "codigo_municipio"
+__CITY_NAME_COL = "nome_municipio"
 
 
 

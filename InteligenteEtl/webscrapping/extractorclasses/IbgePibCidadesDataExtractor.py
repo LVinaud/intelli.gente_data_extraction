@@ -18,7 +18,7 @@ class CitiesGDPDataInfo(Enum):
    """
    PERCAPITA_GDP = {
       "data_category": "caracterizacao_socio_economica",
-      "data_name": "PIB per capita",
+      "data_name": "PIB_PERCAP",
       "column_name": """Produto Interno Bruto per capita, 
 a preços correntes
 (R$ 1,00)""",
@@ -28,7 +28,7 @@ a preços correntes
 
    AGRI_GDP = {
       "data_category": "caracterizacao_socio_economica",
-      "data_name": "PIB Agropecuária",
+      "data_name": "PIB_AG",
       "column_name": """Valor adicionado bruto da Agropecuária, 
 a preços correntes
 (R$ 1.000)""",
@@ -38,7 +38,7 @@ a preços correntes
 
    INDUSTRY_GDP = {
       "data_category": "caracterizacao_socio_economica",
-      "data_name": "PIB Indústria",
+      "data_name": "PIB_IND",
       "column_name": """Valor adicionado bruto da Indústria,
 a preços correntes
 (R$ 1.000)""",
@@ -48,7 +48,7 @@ a preços correntes
 
    SERVICES_GDP = {
       "data_category": "caracterizacao_socio_economica",
-      "data_name": "PIB Serviços",
+      "data_name": "PIB_SRV",
       "column_name": """Valor adicionado bruto dos Serviços,
 a preços correntes 
 - exceto Administração, defesa, educação e saúde públicas e seguridade social
@@ -59,7 +59,7 @@ a preços correntes
 
    PUBLIC_ADMIN_GDP = {
       "data_category": "caracterizacao_socio_economica",
-      "data_name": "PIB Administração Pública",
+      "data_name": "PIB_AP",
       "column_name": """Valor adicionado bruto da Administração, defesa, educação e saúde públicas e seguridade social, 
 a preços correntes
 (R$ 1.000)""",

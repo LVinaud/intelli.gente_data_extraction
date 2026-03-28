@@ -20,7 +20,7 @@ class DatasusDataInfo(Enum):
    GINI_COEF = {
       "url":"http://tabnet.datasus.gov.br/cgi/ibge/censo/cnv/ginibr.def",
       "data_abrev":"ginibr", #código para o dado que aparece no HTML de cada botão na janela de períodos disponíveis
-      "data_name":"Índice de GINI da renda domiciliar per capita",
+      "data_name":"GINI",
       "data_topic": "saúde",
       "content_to_select":[], #botões de conteúdo para clicar
       "columns_to_select":[], #botões de colunas para clicar
