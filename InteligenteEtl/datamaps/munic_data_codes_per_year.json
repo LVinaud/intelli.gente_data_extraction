@@ -35,6 +35,7 @@
         "Website adaptado para dispositivos móveis ou desenhado em versão mobile" : "MTIC165",
         "Desenvolve programa ou ação de inclusão digital" : "MTIC19",
         "Disponibiliza para acesso público" : "MTIC211",
+        "Disponibilização de informações e serviços de órgãos públicos, em quiosque ou balcão informatizado" : "MTIC212",
         "Promoção de cursos de capacitação em informática para a população" : "MTIC214",
         "Disponibiliza acesso por conexão wi-fi" : "MTIC22",
         "Utiliza grupos de discussões, foruns ou comunidades" : "MTIC252",
@@ -216,6 +217,7 @@
         "Emitir guia de pagamento de tributos" : "MTIC1216",
         "Emissão de documentos como licenças, certidões, permissões e outros documentos" : "MTIC1217",
         "Pesquisa de satisfação relacionada aos serviços prestados pela prefeitura" : "MTIC1218",
+        "Disponibilização de informações e serviços de órgãos públicos, em quiosque ou balcão informatizado" : "MTIC212",
 
         "Existe disponibilidade de dados ou sistemas do município de forma georreferenciada" : "MREG012",
         "Existe disponibilidade de dados ou sistemas do município de forma informatizada" : "MREG011",
@@ -425,6 +427,7 @@
         "Projetos voltados para educação de povos indígenas" : "MEDU132",
         "Projetos voltados para educação quilombolas" : "MEDU133",
         "Projetos voltados para a educação de outros povos e comunidades tradicionais" : "MEDU134",
+        "Não possui ações ou não esta disponível" : "MEDU135",
 
         "Combate à violência nas escolas" : "MEDU114"
     }

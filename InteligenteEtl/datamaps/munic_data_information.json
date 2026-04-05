@@ -1014,5 +1014,13 @@
     "Dados individualizados das remunerações de servidores em CSV, ODS, XLS, DOC": {
         "categoria": "Dados Abertos",
         "tipo": "bool"
+    },
+    "Não possui ações ou não esta disponível": {
+        "categoria": "Dados Abertos",
+        "tipo": "bool"
+    },
+    "Disponibilização de informações e serviços de órgãos públicos, em quiosque ou balcão informatizado": {
+        "categoria": "Dados Abertos",
+        "tipo": "bool"
     }
 }
