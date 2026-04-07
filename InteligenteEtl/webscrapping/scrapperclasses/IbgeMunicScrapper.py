@@ -12,7 +12,7 @@ class IbgeMunicScrapper(IbgePibCidadesScrapper):
       2021 : "https://ftp.ibge.gov.br/Perfil_Municipios/2021/Base_de_Dados/Base_MUNIC_2021_20240425.xlsx",
       2020 : "https://ftp.ibge.gov.br/Perfil_Municipios/2020/Base_de_Dados/Base_MUNIC_2020.xlsx",
       2019 : "https://ftp.ibge.gov.br/Perfil_Municipios/2019/Base_de_Dados/Base_MUNIC_2019_20210817.xlsx",
-      # 2018: "https://ftp.ibge.gov.br/Perfil_Municipios/2018/Base_de_Dados/Base_MUNIC_2018_xlsx_20201103.zip",
+      2018: "https://ftp.ibge.gov.br/Perfil_Municipios/2018/Base_de_Dados/Base_MUNIC_2018_xlsx_20201103.zip",
       # 2017 : "https://ftp.ibge.gov.br/Perfil_Municipios/2017/Base_de_Dados/Base_MUNIC_2017_xls.zip",
       # 2015 : "https://ftp.ibge.gov.br/Perfil_Municipios/2015/Base_de_Dados/Base_MUNIC_2015_xls.zip",
       # 2014 : "https://ftp.ibge.gov.br/Perfil_Municipios/2014/base_MUNIC_xls_2014.zip",
@@ -142,6 +142,10 @@ class IbgeMunicScrapper(IbgePibCidadesScrapper):
 
          for sheet in sheets:
             df_sheet = pd.read_excel(excel_file, sheet)
+            # Drop colunas redundantes ANTES de checar/renomear o código do município,
+            # pois algumas abas (ex: Cultura 2018) têm colunas administrativas na posição 0
+            # que, se renomeadas para city_code antes do drop, criam duplicatas.
+            df_sheet = df_sheet.drop(columns=self.REDUNDANT_COLUMNS[year], errors='ignore')
             # Normaliza o nome da coluna de código do município: o IBGE usa nomes
             # inconsistentes entre abas em alguns anos (ex: 'Cod Munic' vs 'CodMun' em 2024)
             first_col = df_sheet.columns[0]
@@ -149,7 +153,6 @@ class IbgeMunicScrapper(IbgePibCidadesScrapper):
                df_sheet = df_sheet.rename(columns={first_col: city_code})
             if((year==2019 and sheet=='Recursos humanos') or (year==2013 and sheet=='Legislação')):
                df_sheet = df_sheet[df_sheet[city_code].notna()]
-            df_sheet = df_sheet.drop(columns=self.REDUNDANT_COLUMNS[year], errors='ignore')
             df = pd.merge(df, df_sheet, on=city_code, how='outer')
 
          if(year==2018):
@@ -159,7 +162,27 @@ class IbgeMunicScrapper(IbgePibCidadesScrapper):
 
          df.columns = df.columns.str.upper()
 
-         #print(df)
+         # Derivar variáveis MN* a partir de MTIC04 (tipo de conexão) para 2024
+         if year == 2024 and 'MTIC04' in df.columns:
+            mtic04_to_mn = {
+               'Acesso discado/conexão discada via telefone': 'MNADT',
+               'Via cabo ou fibra ótica': 'MNCFO',
+               'Via linha telefônica (DSL)': 'MNDSL',
+               'Via modem Via linha telefônica (DSL)G, Via rádioG ou Via satéliteG': 'MNDSLG',
+               'Via rádio': 'MNRD',
+               'Via satélite': 'MNSAT',
+               'Não sabe informar': 'MNNS',
+               'Nenhuma': 'MNNPN',
+               'Recusa': 'MNREC',
+            }
+            for text_val, col_name in mtic04_to_mn.items():
+               df[col_name] = df['MTIC04'].apply(lambda x: 'Sim' if x == text_val else 'Não')
+            # MNND: "Não informou" ou "-"
+            df['MNND'] = df['MTIC04'].apply(lambda x: 'Sim' if x in ('Não informou', '-') else 'Não')
+
+         # Derivar APLANDIR a partir de MLEG013 (ano última revisão) com fallback para MLEG011 (ano criação)
+         if year == 2021 and 'MLEG013' in df.columns and 'MLEG011' in df.columns:
+            df['APLANDIR'] = df['MLEG013'].where(df['MLEG013'] != '-', df['MLEG011'])
 
          data_list.append(
             YearDataPoint(df,year)

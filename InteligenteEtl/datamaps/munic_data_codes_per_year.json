@@ -98,7 +98,18 @@
         "Agricultura familiar" : "MAGR152",
         "Aquicultura" : "MAGR153",
         "Pesca" : "MAGR154",
-        "Produção de hortas comunitárias" : "MAGR155"
+        "Produção de hortas comunitárias" : "MAGR155",
+
+        "Acesso discado/conexão discada via telefone" : "MNADT",
+        "Via cabo ou fibra ótica" : "MNCFO",
+        "Via linha telefônica DSL" : "MNDSL",
+        "Via modem/via linha telefônica DSLG ou via rádio G" : "MNDSLG",
+        "Via rádio" : "MNRD",
+        "Via satélite" : "MNSAT",
+        "Não sabe informar (tipo de conexão)" : "MNNS",
+        "Não existe informação disponível (tipo de conexão)" : "MNND",
+        "Não possui ações (tipo de conexão)" : "MNNPN",
+        "Se recusou a informar (tipo de conexão)" : "MNREC"
     },
 
     "2023" :
@@ -429,7 +440,9 @@
         "Projetos voltados para a educação de outros povos e comunidades tradicionais" : "MEDU134",
         "Não possui ações ou não esta disponível" : "MEDU135",
 
-        "Combate à violência nas escolas" : "MEDU114"
+        "Combate à violência nas escolas" : "MEDU114",
+
+        "Atualização Plano Diretor" : "APLANDIR"
     }
 }
 

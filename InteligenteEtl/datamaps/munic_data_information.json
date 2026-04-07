@@ -1022,5 +1022,49 @@
     "Disponibilização de informações e serviços de órgãos públicos, em quiosque ou balcão informatizado": {
         "categoria": "Dados Abertos",
         "tipo": "bool"
+    },
+    "Acesso discado/conexão discada via telefone": {
+        "categoria": "Infraestrutura de Conectividade",
+        "tipo": "bool"
+    },
+    "Via cabo ou fibra ótica": {
+        "categoria": "Infraestrutura de Conectividade",
+        "tipo": "bool"
+    },
+    "Via linha telefônica DSL": {
+        "categoria": "Infraestrutura de Conectividade",
+        "tipo": "bool"
+    },
+    "Via modem/via linha telefônica DSLG ou via rádio G": {
+        "categoria": "Infraestrutura de Conectividade",
+        "tipo": "bool"
+    },
+    "Via rádio": {
+        "categoria": "Infraestrutura de Conectividade",
+        "tipo": "bool"
+    },
+    "Via satélite": {
+        "categoria": "Infraestrutura de Conectividade",
+        "tipo": "bool"
+    },
+    "Não sabe informar (tipo de conexão)": {
+        "categoria": "Infraestrutura de Conectividade",
+        "tipo": "bool"
+    },
+    "Não existe informação disponível (tipo de conexão)": {
+        "categoria": "Infraestrutura de Conectividade",
+        "tipo": "bool"
+    },
+    "Não possui ações (tipo de conexão)": {
+        "categoria": "Infraestrutura de Conectividade",
+        "tipo": "bool"
+    },
+    "Se recusou a informar (tipo de conexão)": {
+        "categoria": "Infraestrutura de Conectividade",
+        "tipo": "bool"
+    },
+    "Atualização Plano Diretor": {
+        "categoria": "Legislação e Planejamento",
+        "tipo": "str"
     }
 }
