@@ -99,6 +99,8 @@ class AbstractDataExtractor(ABC):
          joined_df = df.merge(keys_df,how="left",left_on=[city_code_column],right_on=["six_digits_from_seven"])
          joined_df = joined_df.drop(["six_digits_from_seven",city_code_column],axis="columns")
          joined_df = joined_df.rename({"seven_digits":city_code_column},axis="columns")
+         joined_df = joined_df.dropna(subset=[city_code_column]) #remove municípios sem correspondência no mapeamento de 7 dígitos
+         joined_df[city_code_column] = joined_df[city_code_column].astype(int)
 
          return joined_df
          """

@@ -112,7 +112,8 @@ class DatasusDataExtractor(AbstractDataExtractor):
 
       for col in df.columns:
          df[col] = df[col].replace(self.NULL_VAL_IDENTIFIER,None) #troca os valores nulos que o datasus coloca com o none
-      
+         df[col] = df[col].replace("-",None) #traço também representa valor nulo no datasus
+
       df = df.dropna(axis="index") #remove valores nulos/none/NaN
 
        #df so tem um ano de dados e 2 colunas

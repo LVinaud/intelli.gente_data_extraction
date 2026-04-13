@@ -8,12 +8,25 @@ from apiextractors import IbgeAgregatesApi, IpeaViolenceMapApi
 from datastructures import  YearDataPoint
 import pandas as pd
 
-def run_datasus(data_info: DatasusDataInfo)->pd.DataFrame:
+def run_datasus(data_info: DatasusDataInfo)->None:
    extractor = DatasusDataExtractor()
    processed_data = extractor.extract_processed_collection(data_info)
    for collect in processed_data:
       print(collect.df.info())
-      collect.df.rename(columns={'municipio_cod_ibge':'codigo_ibge', 'variavel_sigla':'sigla', 'ano':'ano', 'variavel_valor':'variavel_valor'})[['codigo_ibge', 'sigla', 'ano', 'variavel_valor']].to_csv(f"{collect.data_name}.csv")
+      df_renamed = collect.df.rename(columns={'municipio_cod_ibge':'codigo_ibge', 'variavel_sigla':'sigla', 'ano':'ano', 'variavel_valor':'variavel_valor'})[['codigo_ibge', 'sigla', 'ano', 'variavel_valor']]
+      for year in sorted(df_renamed['ano'].unique()):
+         year_df = df_renamed[df_renamed['ano'] == year]
+         year_df.to_csv(f"{collect.data_name}_{year}.csv", index=False)
+
+def run_all_datasus()->None:
+   for data_info in DatasusDataInfo:
+      print(f"\n{'='*50}")
+      print(f"Extraindo: {data_info.name} -> {data_info.value['data_name']}")
+      print(f"{'='*50}")
+      try:
+         run_datasus(data_info)
+      except Exception as e:
+         print(f"ERRO ao extrair {data_info.name}: {type(e).__name__}: {e}")
 
 def run_ibge_city_gdp()->None:
    extractor = IbgePibCidadesDataExtractor()
@@ -120,8 +133,8 @@ def parse_csv():
 if __name__ == "__main__":
    #run_Idbe()
    #run_ibge_city_gdp()
-   run_MUNIC_base()
-   #run_datasus(data_info=DatasusDataInfo.GINI_COEF)
+   #run_MUNIC_base()
+   run_all_datasus()
    #run_ANATEL()
    #run_tech_equipament()
    #run_IDH()

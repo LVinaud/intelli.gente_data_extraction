@@ -26,95 +26,128 @@ class DatasusDataInfo(Enum):
       "columns_to_select":[], #botões de colunas para clicar
       "lines_to_select":[],  #botões de linha para clicar
       "monthly_data":False, #dado é mensal, se não for é anual
-      "dtype":DataTypes.FLOAT
+      "dtype":DataTypes.FLOAT,
+      "target_col": None
    }
    ILLITERACY_RATE =  {
       "url":"http://tabnet.datasus.gov.br/cgi/deftohtm.exe?ibge/censo/cnv/alfbr.csv",
-      "data_abrev":"alfbr", 
-      "data_name":"Taxa de analfabetismo ",
+      "data_abrev":"alfbr",
+      "data_name":"POP_ANALF",
       "data_topic": "Educação",
       "content_to_select":[],
       "columns_to_select":[],
       "lines_to_select":[],
       "monthly_data":False,
-      "dtype":DataTypes.FLOAT
+      "dtype":DataTypes.FLOAT,
+      "target_col": None
    }
    MATERNAL_MORTALITY =  {
       "url":"http://tabnet.datasus.gov.br/cgi/tabcgi.exe?sim/cnv/mat10br.def",
-      "data_abrev":"matbr", 
-      "data_name":"obitos maternos",
+      "data_abrev":"matbr",
+      "data_name":"OBMAT",
       "data_topic": "saúde",
       "content_to_select":["Óbitos maternos"],
       "columns_to_select":[],
       "lines_to_select":[],
       "monthly_data":False,
-      "dtype":DataTypes.INT
+      "dtype":DataTypes.INT,
+      "target_col": None
    }
    LIVE_BIRTHS = {
       "url": "http://tabnet.datasus.gov.br/cgi/tabcgi.exe?sinasc/cnv/nvbr.def",
-      "data_abrev":"nvbr", 
-      "data_name":"nascidos vivos",
+      "data_abrev":"nvbr",
+      "data_name":"NV",
       "data_topic": "saúde",
       "content_to_select":[],
       "columns_to_select":[],
       "lines_to_select":[],
       "monthly_data":False,
-      "dtype":DataTypes.INT
+      "dtype":DataTypes.INT,
+      "target_col": None
    }
    NUMBER_OF_MEDICS = {
       "url": "http://tabnet.datasus.gov.br/cgi/deftohtm.exe?cnes/cnv/prid02br.def",
-      "data_abrev":"pfbr", 
-      "data_name":"Médicos disponíveis na rede pública municipal",
+      "data_abrev":"pfbr",
+      "data_name":"MEDSUS",
       "data_topic": "saúde",
       "content_to_select":[],
       "columns_to_select":["Médicos"],
       "lines_to_select":["Município"],
       "monthly_data":True,
-      "dtype":DataTypes.INT
+      "dtype":DataTypes.INT,
+      "target_col": None
    }
    NUMBER_HOSPITAL_BEDS = {
       "url":"http://tabnet.datasus.gov.br/cgi/tabcgi.exe?cnes/cnv/leiintbr.def",
-      "data_abrev":"ltbr", 
-      "data_name":"Leitos hospitalares na rede pública municipal",
+      "data_abrev":"ltbr",
+      "data_name":"NUM_LEITOS_PUB",
       "data_topic": "saúde",
       "content_to_select":["Quantidade SUS"],
       "columns_to_select":[],
       "lines_to_select":["Município"],
       "monthly_data":True,
-      "dtype":DataTypes.INT
+      "dtype":DataTypes.INT,
+      "target_col": None
    }
    LOW_PRENATAL_BIRTHS = {
       "url": "http://tabnet.datasus.gov.br/cgi/tabcgi.exe?sinasc/cnv/nvbr.def",
-      "data_abrev":"nvbr", 
-      "data_name":"NVPN: Nascidos Vivos com Baixo Pré-Natal",
+      "data_abrev":"nvbr",
+      "data_name":"NVPN",
       "data_topic": "saúde",
       "content_to_select":[],
       "columns_to_select":["Consult pré-natal"],
       "lines_to_select":[],
       "monthly_data":False,
-      "dtype":DataTypes.INT
+      "dtype":DataTypes.INT,
+      "target_col": None
    }
    LOW_WEIGHT_BIRTHS = {
       "url": "http://tabnet.datasus.gov.br/cgi/tabcgi.exe?sinasc/cnv/nvbr.def",
-      "data_abrev":"nvbr", 
-      "data_name":"NVBP: Nascidos Vivos com Baixo Peso",
+      "data_abrev":"nvbr",
+      "data_name":"NVBP",
       "data_topic": "saúde",
       "content_to_select":[],
       "columns_to_select":["Peso ao nascer"],
       "lines_to_select":[],
       "monthly_data":False,
-      "dtype":DataTypes.INT
+      "dtype":DataTypes.INT,
+      "target_col": None
    }
    CHILD_DEATHS = {
       "url": "http://tabnet.datasus.gov.br/cgi/deftohtm.exe?sim/cnv/inf10br.def",
-      "data_abrev":"infbr", 
-      "data_name":"total de óbitos infantis por residencia",
+      "data_abrev":"infbr",
+      "data_name":"OBTFX1",
       "data_topic": "saúde",
       "content_to_select":[],
       "columns_to_select":[],
       "lines_to_select":[],
       "monthly_data":False,
-      "dtype":DataTypes.INT
+      "dtype":DataTypes.INT,
+      "target_col": None
+   }
+   MATERNAL_DEATH_PREGNANCY = {
+      "url": "http://tabnet.datasus.gov.br/cgi/tabcgi.exe?sim/cnv/mat10br.def",
+      "data_abrev":"matbr",
+      "data_name":"NOGRVPA",
+      "data_topic": "saúde",
+      "content_to_select":[],
+      "columns_to_select":["Morte grav/puerp"],
+      "lines_to_select":[],
+      "monthly_data":False,
+      "dtype":DataTypes.INT,
+      "target_col": "Durante a gravidez, parto ou aborto"
+   }
+   MATERNAL_DEATH_PUERPERIUM = {
+      "url": "http://tabnet.datasus.gov.br/cgi/tabcgi.exe?sim/cnv/mat10br.def",
+      "data_abrev":"matbr",
+      "data_name":"MPUE",
+      "data_topic": "saúde",
+      "content_to_select":[],
+      "columns_to_select":["Morte grav/puerp"],
+      "lines_to_select":[],
+      "monthly_data":False,
+      "dtype":DataTypes.INT,
+      "target_col": "Durante o puerpério, até 42 dias"
    }
 
 
@@ -265,7 +298,7 @@ class DatasusLinkScrapper(AbstractScrapper):
       """
       options = webdriver.ChromeOptions()
       if self.headless_mode:
-            #options.add_argument("--headless")  # modo para não gerar um janela
+            options.add_argument("--headless")  # modo para não gerar um janela
             options.add_argument("--disable-gpu")  # compatibilidade
             options.add_argument("--no-sandbox") 
             options.add_argument("--disable-dev-shm-usage")  # prevenir problemas de memória
@@ -316,14 +349,24 @@ class DatasusLinkScrapper(AbstractScrapper):
       else:
          header_row = 3
 
+      target_col = self.data_info.value.get("target_col")
+
       if self.data_info == DatasusDataInfo.NUMBER_OF_MEDICS:
          all_medic_types_col:str = "Total" #coluna com o total de médicos por município
          df = pd.read_csv(file_link, encoding="latin-1", sep=";",header=header_row,usecols=[self.EXTRACTED_TABLE_CITY_COL,all_medic_types_col])
-      
+
       elif self.data_info in [DatasusDataInfo.LOW_WEIGHT_BIRTHS, DatasusDataInfo.LOW_PRENATAL_BIRTHS]:
          df = pd.read_csv(file_link, encoding="latin-1", sep=";",header=header_row)
          df = self.__agregate_cols(df)
-      
+
+      elif target_col is not None:
+         df = pd.read_csv(file_link, encoding="latin-1", sep=";",header=header_row)
+         if target_col in df.columns:
+            df = df[[self.EXTRACTED_TABLE_CITY_COL, target_col]].copy()
+            df = df.rename({target_col: "valor"}, axis="columns")
+         else:
+            return pd.DataFrame()
+
       else:
          df = pd.read_csv(file_link, encoding="latin-1", sep=";",header=header_row)
       
@@ -405,7 +448,7 @@ class DatasusLinkScrapper(AbstractScrapper):
       select_elem.select_by_value(year_button_identifier)
 
       csv_table_button = driver.find_element(By.CLASS_NAME, 'mostra')
-      csv_table_button.click() 
+      csv_table_button.click()
       time.sleep(4)
       window_handles = driver.window_handles
       driver.switch_to.window(window_handles[1])
@@ -413,9 +456,12 @@ class DatasusLinkScrapper(AbstractScrapper):
       html:str = driver.page_source
       csv_link:str = self.__get_link_from_html(html)
 
+      if not csv_link:
+         csv_link = self.__get_csv_link_from_elements(driver)
+
       driver.close()
       driver.switch_to.window(window_handles[0])
-      
+
       return csv_link
  
    def __get_link_from_html(self,html:str)->str:
@@ -438,6 +484,23 @@ class DatasusLinkScrapper(AbstractScrapper):
          return HTTP_REQUEST_STR + "/cgi/ibge/censo" + str_end
       else:
          return HTTP_REQUEST_STR + html[link_start+1:link_end]
+
+   def __get_csv_link_from_elements(self,driver:webdriver.Chrome)->str:
+      """
+      Fallback para encontrar o link do CSV quando ele não aparece no HTML estático.
+      Busca por elementos <a> cujo href termine em .csv
+      """
+      try:
+         links = driver.find_elements(By.TAG_NAME, 'a')
+         for link in links:
+            href = link.get_attribute('href') or ''
+            if href.endswith('.csv'):
+               print(f"LINK CSV ENCONTRADO (via elemento)")
+               return href
+      except Exception:
+         pass
+      print("Não foi possível achar o link do CSV (nem via HTML nem via elementos)")
+      return ""
 
    def __get_years_from_html(self,driver:webdriver.Chrome)->list[int]:
       td_element = driver.find_element(By.XPATH, '//td[@colspan="3"]')
