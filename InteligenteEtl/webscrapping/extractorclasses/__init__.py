@@ -14,3 +14,4 @@ from .AnatelExtractor import AnatelExtractor
 from .SinisaExtractor import SinisaExtractor
 from .RaisExtractor import RaisExtractor
 from .CnucExtractor import CnucExtractor
+from .CfedExtractor import CfedExtractor
