@@ -11,3 +11,5 @@ from .SchoolDistortionRatesScrapper import SchoolDistortionRatesScrapper
 from .TechEquipamentScrapper import TechEquipamentScrapper
 from .IdebFinalYearsScrapper import IdebFinalYearsScrapper
 from .SinisaScrapper import SinisaScrapper
+from .RaisScrapper import RaisScrapper, RaisDataInfo
+from .CnucScrapper import CnucScrapper, CnucDataInfo

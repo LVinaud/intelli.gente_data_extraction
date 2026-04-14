@@ -16,11 +16,12 @@ class AbstractApiInterface(ABC):
    """
 
 
-   DB_CITY_ID_COLUMN = "codigo_municipio" #constantes para o nome das colunas no dataframe final e no banco de dados
+   # Nomes das colunas alinhados com o schema do ProcessedDataCollection (etl_config.json)
+   DB_CITY_ID_COLUMN = "municipio_cod_ibge"
    DB_YEAR_COLUMN = "ano"
-   DB_DATA_IDENTIFIER_COLUMN = "dado_identificador"
-   DB_DATA_VALUE_COLUMN = "valor"
-   DB_DTYPE_COLUMN = "tipo_dado"
+   DB_DATA_IDENTIFIER_COLUMN = "variavel_sigla"
+   DB_DATA_VALUE_COLUMN = "variavel_valor"
+   DB_DTYPE_COLUMN = "tipo_dado"  # mantido por compat. de subclasses; NAO e escrito no df final
    MAX_TIME_SERIES_LEN = 7
 
    DOWNLOADED_FILES_DIR:str = "tempfiles" #diretório temporário para guardar os arquivos .zip e de dados extraidos
@@ -79,10 +80,11 @@ class AbstractApiInterface(ABC):
          data_point_dict: dict [int, list] = {} #dicionário com a chave sendo o index da linha e o valor sendo uma lista com os valores da linha a ser colocada no df
          data_name:str = collection.data_name #nome do dado da coleção
          for point in collection.data_lines : #constroi o dict com os dados da lista de DataPoints de cada variável
-            data_point_dict[dict_index] = [point.city_id, point.year, data_name, point.value ,point.data_type.value]
+            data_point_dict[dict_index] = [point.city_id, point.year, data_name, point.value]
             dict_index+=1
-         
-         columns:list[str] = [self.DB_CITY_ID_COLUMN, self.DB_YEAR_COLUMN, self.DB_DATA_IDENTIFIER_COLUMN, self.DB_DATA_VALUE_COLUMN, self.DB_DTYPE_COLUMN]
+
+         # schema do ProcessedDataCollection e strict: nao incluimos tipo_dado no df
+         columns:list[str] = [self.DB_CITY_ID_COLUMN, self.DB_YEAR_COLUMN, self.DB_DATA_IDENTIFIER_COLUMN, self.DB_DATA_VALUE_COLUMN]
          df: pd.DataFrame = pd.DataFrame.from_dict(data_point_dict,orient="index",columns=columns) #cria um dataframe a partir do dicionário criado
          df[self.DB_YEAR_COLUMN] = df[self.DB_YEAR_COLUMN].astype("int") #transforma essas colunas em inteiros
          df[self.DB_CITY_ID_COLUMN] = df[self.DB_CITY_ID_COLUMN].astype("int")

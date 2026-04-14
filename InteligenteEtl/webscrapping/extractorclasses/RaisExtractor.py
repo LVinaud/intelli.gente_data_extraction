@@ -30,12 +30,13 @@ class RaisExtractor(AbstractDataExtractor):
       out_dir = Path(self.output_dir)
       out_dir.mkdir(parents=True, exist_ok=True)
 
-      year = int(df[self.YEAR_COLUMN].iloc[0]) if self.YEAR_COLUMN in df.columns and len(df) else "NA"
-      fname = f"rais_{data_point.name}_{year}.csv"
-      out_path = out_dir / fname
-
-      df.rename(columns={self.CITY_CODE_COL: 'codigo_ibge', self.DATA_IDENTIFIER_COLUMN: 'sigla', self.YEAR_COLUMN: 'ano', self.DATA_VALUE_COLUMN: 'variavel_valor'})[['codigo_ibge', 'sigla', 'ano', 'variavel_valor']].to_csv(out_path, index=False, sep=self.output_sep, encoding=self.output_encoding)
-      return str(out_path)
+      sigla = data_point.value["data_identifier"]
+      df_std = df.rename(columns={self.CITY_CODE_COL: 'codigo_ibge', self.DATA_IDENTIFIER_COLUMN: 'sigla', self.YEAR_COLUMN: 'ano', self.DATA_VALUE_COLUMN: 'variavel_valor'})[['codigo_ibge', 'sigla', 'ano', 'variavel_valor']]
+      for year in sorted(df_std['ano'].unique()):
+         year_df = df_std[df_std['ano'] == year]
+         out_path = out_dir / f"{sigla}_{int(year)}.csv"
+         year_df.to_csv(out_path, index=False)
+      return str(out_dir)
 
    def extract_processed_collection(self) -> list[ProcessedDataCollection]:
       return [self.__get_data_point(dp) for dp in RaisDataInfo]
@@ -73,6 +74,7 @@ class RaisExtractor(AbstractDataExtractor):
 
       # limpa auxiliares e coluna original
       joined_df = joined_df.drop(columns=["_uf", "_city_name", self.EXTRACTED_CITY_CODE_COL], errors="ignore")
+      joined_df = joined_df.rename({"codigo_municipio": self.CITY_CODE_COL}, axis="columns")
 
       joined_df = self.__rename_and_add_cols(joined_df, data_point)
 

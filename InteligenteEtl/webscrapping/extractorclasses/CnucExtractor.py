@@ -120,7 +120,7 @@ class CnucExtractor(AbstractDataExtractor):
         self,
         save_csv: bool = True,
         output_dir: str = "data/cnuc_processed",
-        output_sep: str = ";",
+        output_sep: str = ",",
         output_encoding: str = "utf-8",
         raw_sep: str = ";",
         raw_encoding: str = "latin-1",
@@ -231,11 +231,16 @@ class CnucExtractor(AbstractDataExtractor):
 
         # seu helper já lida com acentos etc.
         df = match_city_names_with_codes(df, "_city_name", "_uf")
-        # espera-se que ele crie a coluna self.CITY_CODE_COL
+        # helper gera a coluna "codigo_municipio"; renomeamos pro padrão do projeto
+        if "codigo_municipio" in df.columns and self.CITY_CODE_COL not in df.columns:
+            df = df.rename(columns={"codigo_municipio": self.CITY_CODE_COL})
         if self.CITY_CODE_COL not in df.columns:
             raise RuntimeError(
                 f"match_city_names_with_codes não gerou '{self.CITY_CODE_COL}'. Colunas: {list(df.columns)}"
             )
+        # descarta linhas sem match (cidade não encontrada)
+        df = df.dropna(subset=[self.CITY_CODE_COL]).copy()
+        df[self.CITY_CODE_COL] = df[self.CITY_CODE_COL].astype(int)
         return df
 
     def _compute_uc_count(self, df: pd.DataFrame) -> pd.DataFrame:
@@ -274,57 +279,73 @@ class CnucExtractor(AbstractDataExtractor):
     def _get_data_point(self, data_point: CnucDataInfo) -> ProcessedDataCollection:
         spec = data_point.value["spec"]
         year = int(spec.year)
+        sigla = data_point.value["data_identifier"]
 
         scr = CnucScrapper(data_point)
         raw_csv_path = scr.scrape_csv()
         raw_df = self._load_raw_df(raw_csv_path)
 
-        exploded = self._explode_uc_municipalities(raw_df)
-        exploded = self._match_city_codes(exploded)
-
-        # cria dataframe final conforme indicador
         if data_point.name == "CONSERVATION_UNITS_COUNT":
+            # CNUC (MMA): explode UC -> municípios e conta UCs distintas por município
+            exploded = self._explode_uc_municipalities(raw_df)
+            exploded = self._match_city_codes(exploded)
+
             metric = self._compute_uc_count(exploded)
             metric[self.YEAR_COLUMN] = year
-            metric[self.DATA_IDENTIFIER_COLUMN] = data_point.value["data_identifier"]
+            metric[self.DATA_IDENTIFIER_COLUMN] = sigla
 
             final = metric[
                 [self.CITY_CODE_COL, self.DATA_IDENTIFIER_COLUMN, self.YEAR_COLUMN, self.DATA_VALUE_COLUMN]
             ].copy()
 
             if self.save_csv:
-                self._save_processed_csv(final, f"cnuc_uc_count_{year}.csv")
+                self._save_processed_csv(final, f"{sigla}_{year}.csv")
 
             return ProcessedDataCollection(
                 category=data_point.value["topic"],
                 dtype=data_point.value["dtype"],
-                data_name=data_point.value["data_identifier"],
+                data_name=sigla,
                 time_series_years=[year],
                 df=final,
             )
 
         elif data_point.name == "MUNICIPALITY_BIOME":
-            metric = self._compute_city_biome(exploded)
+            # IBGE 2024: Bioma predominante por município. Cobertura total.
+            # Colunas esperadas: "Geocódigo", "Nome do município", "Sigla da UF", "Bioma predominante"
+            geocode_col = _find_col(raw_df, "Geocódigo")
+            biome_col = _find_col(raw_df, "Bioma predominante")
 
-            # DW: usa biome_code como valor (INT)
+            df = raw_df[[geocode_col, biome_col]].copy()
+            # O CSV do IBGE tem um rodapé com metadados (linhas com "--------", "CAMPO", descrições).
+            # Filtra para manter apenas linhas cujo Geocódigo é um inteiro de 7 dígitos.
+            geo_str = df[geocode_col].astype(str).str.strip()
+            mask = geo_str.str.fullmatch(r"\d{7}")
+            df = df[mask].copy()
+            df[self.CITY_CODE_COL] = geo_str[mask].astype(int)
+            df["biome_name"] = df[biome_col].astype(str).str.strip()
+            df["biome_code"] = df["biome_name"].map(lambda x: BIOME_CODE.get(x, 0)).astype(int)
+
             final = pd.DataFrame({
-                self.CITY_CODE_COL: metric[self.CITY_CODE_COL],
-                self.DATA_IDENTIFIER_COLUMN: data_point.value["data_identifier"],
+                self.CITY_CODE_COL: df[self.CITY_CODE_COL],
+                self.DATA_IDENTIFIER_COLUMN: sigla,
                 self.YEAR_COLUMN: year,
-                self.DATA_VALUE_COLUMN: metric["biome_code"].astype(int),
+                self.DATA_VALUE_COLUMN: df["biome_code"].astype(int),
             })
+            final = final.drop_duplicates(subset=[self.CITY_CODE_COL]).reset_index(drop=True)
 
             if self.save_csv:
-                self._save_processed_csv(final, f"cnuc_biome_code_{year}.csv")
-                # debug com o nome do bioma escolhido
-                dbg = metric.copy()
+                self._save_processed_csv(final, f"{sigla}_{year}.csv")
+                # debug com o nome do bioma (formato livre; fora do padrão do DW)
+                dbg_dir = Path(self.output_dir)
+                dbg_dir.mkdir(parents=True, exist_ok=True)
+                dbg = df[[self.CITY_CODE_COL, "biome_name", "biome_code"]].copy()
                 dbg[self.YEAR_COLUMN] = year
-                self._save_processed_csv(dbg, f"cnuc_biome_debug_{year}.csv")
+                dbg.to_csv(dbg_dir / f"{sigla}_debug_{year}.csv", index=False, sep=self.output_sep, encoding=self.output_encoding)
 
             return ProcessedDataCollection(
                 category=data_point.value["topic"],
-                dtype=data_point.value["dtype"], 
-                data_name=data_point.value["data_identifier"],
+                dtype=data_point.value["dtype"],
+                data_name=sigla,
                 time_series_years=[year],
                 df=final,
             )
@@ -334,7 +355,7 @@ class CnucExtractor(AbstractDataExtractor):
 
 
 if __name__ == "__main__":
-    ext = CnucIndicatorsExtractor(save_csv=True)
+    ext = CnucExtractor(save_csv=True)
     cols = ext.extract_processed_collection()
     for c in cols:
         print("\n===", c.data_name, "===")

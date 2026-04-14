@@ -3,6 +3,8 @@ from webscrapping.scrapperclasses import * #um dos poucos casos que fazer isso Ã
 from webscrapping.extractorclasses import DatasusDataExtractor, IbgePibCidadesDataExtractor, CityPaymentsExtractor
 from webscrapping.scrapperclasses import DatasusDataInfo,IbgePibCidadesScrapper
 from webscrapping.extractorclasses import  FormalJobsExtractor, IdhExtractor, IbgeCitiesNetworkExtractor, IbgeMunicExtractor, AnatelExtractor
+from webscrapping.extractorclasses.RaisExtractor import RaisExtractor
+from webscrapping.scrapperclasses.RaisScrapper import RaisScrapper, RaisDataInfo
 from webscrapping.extractorclasses import HigherEducaPositionsExtractor, SchoolDistortionRatesExtractor
 from apiextractors import IbgeAgregatesApi, IpeaViolenceMapApi
 from datastructures import  YearDataPoint
@@ -87,6 +89,55 @@ def run_pop_mfe_analf():
          year_df = df[df['ano'] == year]
          year_df.to_csv(f"{data_name}_{year}.csv", index=False)
          print(f"Gerado: {data_name}_{year}.csv ({len(year_df)} linhas)")
+
+def run_rais_single(data_info: RaisDataInfo)->None:
+   """Diagnostico: roda 1 ponto do RAIS e gera CSV padrao."""
+   scr = RaisScrapper(data_info, headless=True, webscrapping_delay_multiplier=1)
+   csv_path = scr.scrape_csv()
+   print(f"CSV baixado em: {csv_path}")
+   df = pd.read_csv(csv_path, sep=";", encoding="latin-1", on_bad_lines="skip")
+   print("shape bruto:", df.shape)
+   print("primeiras linhas:")
+   print(df.head(10))
+   print("ultimas linhas:")
+   print(df.tail(5))
+
+def run_rais_all()->None:
+   extractor = RaisExtractor(headless=True, webscrapping_delay_multiplier=1, save_csv=True, output_dir="rais_output")
+   collections = extractor.extract_processed_collection()
+   for collect in collections:
+      print(collect.df.info())
+      print(collect.df.head())
+
+def run_sinisa_diag():
+   """Diagnostico SINISA: lista documentos encontrados, tenta baixar e mostra o que vem."""
+   from webscrapping.scrapperclasses import SinisaScrapper
+   for results_url in [
+      None,  # fluxo padrao (gov.br/cidades/resultados-sinisa)
+      "https://www.gov.br/cidades/pt-br/acesso-a-informacao/acoes-e-programas/saneamento/sinisa/resultados-sinisa/resultados-sinisa-2025",
+      "https://www.gov.br/cidades/pt-br/acesso-a-informacao/acoes-e-programas/saneamento/sinisa/resultados-sinisa/",
+   ]:
+      print(f"\n\n########## URL: {results_url} ##########")
+      scr = SinisaScrapper(results_url=results_url, file_kinds=["planilhas"], modules=None, extract_archives=True, overwrite=False)
+      try:
+         docs = scr._list_documents(scr._results_url, scr._file_kinds, scr._modules)
+         print(f"-- {len(docs)} documentos encontrados --")
+         for d in docs:
+            print(f"  kind={d.kind:12s} module={str(d.module):18s} url={d.url}")
+      except Exception as e:
+         print(f"ERRO ao listar: {type(e).__name__}: {e}")
+
+def run_sinisa_full():
+   from webscrapping.extractorclasses import SinisaExtractor
+   ext = SinisaExtractor()
+   collections = ext.extract_processed_collection()
+   print(f"\n=== {len(collections)} indicadores extraidos ===")
+   # lista indicadores - procurar os 5 da demanda
+   wanted = {"GFI1309", "IES0016", "IES1007", "PO028", "PO048"}
+   for c in collections:
+      hit = any(w in c.data_name for w in wanted)
+      marker = " <<< ALVO" if hit else ""
+      print(f"  {c.data_name}  years={c.time_series_years}{marker}")
 
 def run_api_ipea():
    api_extractor = IpeaViolenceMapApi()
@@ -189,5 +240,7 @@ if __name__ == "__main__":
    #run_IDH()
    #run_higher_educa()
    #run_formal_jobs()
-   run_pop_mfe_analf()
+   #run_pop_mfe_analf()
+   #run_rais_all()
+   run_sinisa_diag()
    

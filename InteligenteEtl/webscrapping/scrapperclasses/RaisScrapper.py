@@ -39,7 +39,7 @@ class RaisDataInfo(Enum):
     Agora no formato do extractor antigo: inclui metadata + spec.
     """
     TECH_JOBS = {
-        "data_identifier": "Empregos em TIC",
+        "data_identifier": "EMP_TICM",
         "topic": "Inovação",
         "dtype": DataTypes.INT,
         "companies_section": False,
@@ -58,7 +58,7 @@ class RaisDataInfo(Enum):
     }
 
     TOURISM_JOBS = {
-        "data_identifier": "Empregos em Turismo",
+        "data_identifier": "EMPG_TUR",
         "topic": "Turismo",
         "dtype": DataTypes.INT,
         "companies_section": False,
@@ -77,7 +77,7 @@ class RaisDataInfo(Enum):
     }
 
     TECH_COMPANIES = {
-        "data_identifier": "Empresas de TICs no município",
+        "data_identifier": "EMPG_TIC",
         "topic": "Inovação",
         "dtype": DataTypes.INT,
         "companies_section": True,

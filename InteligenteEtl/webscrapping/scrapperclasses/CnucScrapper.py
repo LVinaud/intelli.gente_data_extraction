@@ -24,9 +24,9 @@ class CnucQuerySpec:
     direct_csv_url: Optional[str] = None
 
 class CnucDataInfo(Enum):
-    # 4061 (MMA 2024): número de UCs no município
+    # MMA 2024 (CNUC): número de UCs no município
     CONSERVATION_UNITS_COUNT = {
-        "data_identifier": "Número de Unidade de Conservação",
+        "data_identifier": "UCONS",
         "topic": "Ambiente",
         "dtype": DataTypes.INT,
         "spec": CnucQuerySpec(
@@ -35,14 +35,15 @@ class CnucDataInfo(Enum):
         ),
     }
 
-    # 4062 (MMA 2025): bioma(s) associado(s)
+    # IBGE 2024: bioma predominante por município (cobertura total dos 5.570 municípios)
+    # Fonte: geoftp.ibge.gov.br/informacoes_ambientais/estudos_ambientais/biomas/documentos/
     MUNICIPALITY_BIOME = {
-        "data_identifier": "Tipo de BIOMA",
+        "data_identifier": "TBIOM",
         "topic": "Ambiente",
-        "dtype": DataTypes.INT,  # no extractor você decide se vira texto ou “biomas_count”, etc.
+        "dtype": DataTypes.INT,
         "spec": CnucQuerySpec(
-            year="2025",
-            direct_csv_url="https://dados.mma.gov.br/dataset/44b6dc8a-dc82-4a84-8d95-1b0da7c85dac/resource/a6e0d1ca-b589-499f-ad48-0c3ee9fb7de1/download/cnuc_2025_08.csv",
+            year="2024",
+            direct_csv_url="https://geoftp.ibge.gov.br/informacoes_ambientais/estudos_ambientais/biomas/documentos/Bioma_Predominante_por_Municipio_2024.csv",
         ),
     }
 

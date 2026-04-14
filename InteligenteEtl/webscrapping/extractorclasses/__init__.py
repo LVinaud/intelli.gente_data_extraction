@@ -12,3 +12,5 @@ from .TechEquipamentExtractor import TechEquipamentExtractor
 from .IbgeMunicExtractor import IbgeMunicExtractor
 from .AnatelExtractor import AnatelExtractor
 from .SinisaExtractor import SinisaExtractor
+from .RaisExtractor import RaisExtractor
+from .CnucExtractor import CnucExtractor
