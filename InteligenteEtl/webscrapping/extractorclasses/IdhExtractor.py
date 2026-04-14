@@ -11,7 +11,7 @@ class IdhExtractor(AbstractDataExtractor):
    EXTRACTED_CITY_NAME_COL = "Territorialidade" # 
    EXTRACTED_DATA_VALUES_COL = "IDHM" #coluna dos valores a serem extraídos
 
-   DATA_NAME = "Índice de desenvolvimento humano do município (IDH-M)"
+   DATA_NAME = "IDHM"
    DTYPE = DataTypes.FLOAT
    DATA_TOPIC = "IDH-M" #tópico
 
@@ -52,6 +52,7 @@ class IdhExtractor(AbstractDataExtractor):
       
       df = match_city_names_with_codes(df,self.EXTRACTED_CITY_NAME_COL,"codigo_uf")
       df = df.drop(self.EXTRACTED_CITY_NAME_COL,axis="columns") #tira coluna de nomes dos municípios
+      df = df.rename({"codigo_municipio": self.CITY_CODE_COL}, axis="columns") #padroniza nome da coluna de código
 
       return df
    

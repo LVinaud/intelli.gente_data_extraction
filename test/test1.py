@@ -48,6 +48,46 @@ def run_api_agregados():
    api.print_processed_data(data_points)
    api.save_processed_data_in_csv(data_points,1)
 
+def run_pop_mfe_analf():
+   """
+   Testa extração de POP_TOT_MFE, POP_ANALF (tabela 9542) e POP_OCVE (tabela 2031)
+   via API do IBGE.
+   Filtra o datamap para extrair apenas as categorias 'população' e 'trabalho'.
+   Constrói o DF final manualmente a partir dos RawDataCollection.
+   """
+   import pandas as pd
+   api = IbgeAgregatesApi()
+   # filtra o datamap para extrair só as variáveis novas
+   api._data_map = {
+      "população": api._data_map["população"],
+      "trabalho": api._data_map["trabalho"],
+   }
+
+   raw_data = api.extract_raw_data()
+   for collection in raw_data:
+      data_name = collection.data_name
+      rows = []
+      for point in collection.data_lines:
+         if point.value is None:
+            continue
+         rows.append({
+            'codigo_ibge': int(point.city_id),
+            'sigla': data_name,
+            'ano': int(point.year),
+            'variavel_valor': point.value
+         })
+      if not rows:
+         print(f"Sem dados para {data_name}")
+         continue
+      df = pd.DataFrame(rows)
+      print(f"\n=== {data_name} ===")
+      print(df.info())
+      print(df.head())
+      for year in sorted(df['ano'].unique()):
+         year_df = df[df['ano'] == year]
+         year_df.to_csv(f"{data_name}_{year}.csv", index=False)
+         print(f"Gerado: {data_name}_{year}.csv ({len(year_df)} linhas)")
+
 def run_api_ipea():
    api_extractor = IpeaViolenceMapApi()
    list_data_collect = api_extractor.extract_processed_collection()
@@ -61,14 +101,23 @@ def run_CAPAG():
 def run_formal_jobs():
    obj = FormalJobsExtractor()
    collection_list = obj.extract_processed_collection()
-   return collection_list[0].df
+   for collect in collection_list:
+      print(collect.df.info())
+      print(collect.df.head())
+      df_renamed = collect.df.rename(columns={'municipio_cod_ibge':'codigo_ibge', 'variavel_sigla':'sigla', 'ano':'ano', 'variavel_valor':'variavel_valor'})[['codigo_ibge', 'sigla', 'ano', 'variavel_valor']]
+      for year in sorted(df_renamed['ano'].unique()):
+         year_df = df_renamed[df_renamed['ano'] == year]
+         year_df.to_csv(f"POP_OCVE_{year}.csv", index=False)
 
 def run_IDH():
    extractor = IdhExtractor()
    collections = extractor.extract_processed_collection()
    for collect in collections:
       print(collect.df.info())
-      collect.df.rename(columns={'municipio_cod_ibge':'codigo_ibge', 'variavel_sigla':'sigla', 'ano':'ano', 'variavel_valor':'variavel_valor'})[['codigo_ibge', 'sigla', 'ano', 'variavel_valor']].to_csv("idh-m.csv",index=False)
+      df_renamed = collect.df.rename(columns={'municipio_cod_ibge':'codigo_ibge', 'variavel_sigla':'sigla', 'ano':'ano', 'variavel_valor':'variavel_valor'})[['codigo_ibge', 'sigla', 'ano', 'variavel_valor']]
+      for year in sorted(df_renamed['ano'].unique()):
+         year_df = df_renamed[df_renamed['ano'] == year]
+         year_df.to_csv(f"{collect.data_name}_{year}.csv", index=False)
 
 def run_ANATEL():
    extractor = AnatelExtractor()
@@ -134,9 +183,11 @@ if __name__ == "__main__":
    #run_Idbe()
    #run_ibge_city_gdp()
    #run_MUNIC_base()
-   run_all_datasus()
+   #run_all_datasus()
    #run_ANATEL()
    #run_tech_equipament()
    #run_IDH()
    #run_higher_educa()
+   #run_formal_jobs()
+   run_pop_mfe_analf()
    

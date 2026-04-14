@@ -10,7 +10,16 @@
       "habitação": {
             "Domicílios particulares permanentes urbanos" : {"variavel":96, "agregado": 2409, "classificacao": "12235[all]|1[1]" },
             "Domicílios particulares permanentes urbanos com existência de calçamento/pavimentação da rua" : {"variavel":96, "agregado": 2409, "classificacao": "12235[104562,104563]|1[1]" }
-      }           
+      },
+
+      "população": {
+            "POP_TOT_MFE": {"variavel": 950, "agregado": 9542, "classificacao": "59[93024]"},
+            "POP_ANALF": {"variavel": 950, "agregado": 9542, "classificacao": "59[1024]"}
+      },
+
+      "trabalho": {
+            "POP_OCVE": {"variavel": 696, "agregado": 2031, "classificacao": "11913[96167,96168]"}
+      }
 
 }
  
